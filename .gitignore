@@ -36,10 +36,8 @@ out/
 ### VS Code ###
 .vscode/
 
-### jar
-*.jar
 
-# 환경 및 구성 파일 무시
+# Sensitive configuration files
 application*.yml
 docker-compose*.yml
 Dockerfile
