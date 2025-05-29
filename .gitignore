@@ -35,3 +35,12 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### jar
+*.jar
+
+# 환경 및 구성 파일 무시
+application*.yml
+docker-compose*.yml
+Dockerfile
+.env
