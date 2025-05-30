@@ -27,7 +27,7 @@ public class PetService {
     @Value("${openapi.petAPIUrl}")
     private String PET_API_URL;
 
-    private final ObjectMapper objectMapper;
+    // private final ObjectMapper objectMapper; 전역 objectMapper
 
     // [ 국가동물보호정보시스템 등록 동물 openAPI 호출 -> PetInfoResponse 객체 반환 ]
     public PetInfoResponse getPetInfo(String dogRegNo, String rfidCd, String ownerNm, String ownerBirth) throws IOException {
@@ -52,6 +52,8 @@ public class PetService {
 
             log.info("API 응답 원문:\n{}", sb.toString());
 
+            // 지역으로 변경 ← 전역 설정은 등록 시 JSON으로 받아올 수가 없음
+            ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(DeserializationFeature.UNWRAP_ROOT_VALUE); // JSON 루트 언래핑 설정
 
             PetInfoResponse response = objectMapper.readValue(sb.toString(), PetInfoResponse.class);
