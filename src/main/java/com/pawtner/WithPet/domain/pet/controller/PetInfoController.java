@@ -1,5 +1,6 @@
 package com.pawtner.WithPet.domain.pet.controller;
 
+import com.pawtner.WithPet.domain.pet.dto.PetDetailResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetInfoResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetRegisterRequest;
@@ -69,5 +70,15 @@ public class PetInfoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiErrorResponse.of(500, "/api/pet/list", "DB_FAILED", e.getMessage()));
         }
+    }
+
+    // 반려견 상세 정보 조회
+    @GetMapping
+    public ResponseEntity getPetDetailInfo(@RequestParam String dogRegNo){
+        PetDetailResponse petData = petDBService.getPetDetailInfo(dogRegNo);
+
+        ApiResponse<PetDetailResponse> response = ApiResponse.success("SUCCESS_GET_DOG_DETAIL", "반려견 상세 정보를 조회했습니다.", petData);
+
+        return ResponseEntity.ok(response);
     }
 }

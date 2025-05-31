@@ -37,6 +37,10 @@ public class PetInfoResponse {
             private String kindNm;
             private String neuterYn;
             private String orgNm;
+
+            // 국가동물보호정보시스템 필드 추가
+            private String regTm;
+            private String aprTm;
         }
     }
 }
