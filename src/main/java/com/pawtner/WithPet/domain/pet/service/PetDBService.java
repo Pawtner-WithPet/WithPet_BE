@@ -1,9 +1,11 @@
 package com.pawtner.WithPet.domain.pet.service;
 
+import com.pawtner.WithPet.domain.pet.dto.PetDetailResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetInfoResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
+import com.pawtner.WithPet.global.exception.PetInfoNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +52,30 @@ public class PetDBService {
                 .kindNm(pet.getKindNm())
                 .sexNm(pet.getSexNm())
                 .dogAge(calculateAge(pet.getBirthDt()))
+                .dogImg(pet.getDogImg())
+                .build();
+    }
+
+    // 반려견 상세 정보 조회
+    public PetDetailResponse getPetDetailInfo(String dogRegNo) {
+        Pet pet = petRepository.findByDogRegNo(dogRegNo)
+                .orElseThrow(() -> new PetInfoNotFoundException("해당 반려견 정보를 찾을 수 없습니다."));
+
+        return PetDetailResponse.builder()
+                .dogRegNo(pet.getDogRegNo())
+                .rfidCd(pet.getRfidCd())
+                .dogNm(pet.getDogNm())
+                .dogAge(calculateAge(pet.getBirthDt()))
+                .sexNm(pet.getSexNm())
+                .kindNm(pet.getKindNm())
+                .neuterYn(pet.getNeuterYn())
+                .orgNm(pet.getOrgNm())
+                .aprGbNm(pet.getAprGbNm())
+                .officeTel(pet.getOfficeTel())
+                .rfidGubun(pet.getRfidGubun())
+                .userId(pet.getUserId())
+                .features(pet.getFeatures())
+                .nosePrint(pet.getNosePrint())
                 .dogImg(pet.getDogImg())
                 .build();
     }
