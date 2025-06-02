@@ -7,6 +7,7 @@ import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
 import com.pawtner.WithPet.global.exception.PetInfoNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.time.Period;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PetDBService {
@@ -57,9 +59,9 @@ public class PetDBService {
     }
 
     // 반려견 상세 정보 조회
-    public PetDetailResponse getPetDetailInfo(String dogRegNo) {
-        Pet pet = petRepository.findByDogRegNo(dogRegNo)
-                .orElseThrow(() -> new PetInfoNotFoundException("해당 반려견 정보를 찾을 수 없습니다."));
+    public PetDetailResponse getPetDetailInfo(Long petId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 반려견 정보를 찾을 수 없습니다."));
 
         return PetDetailResponse.builder()
                 .dogRegNo(pet.getDogRegNo())
@@ -78,6 +80,22 @@ public class PetDBService {
                 .nosePrint(pet.getNosePrint())
                 .dogImg(pet.getDogImg())
                 .build();
+    }
+
+    // 반려견 정보 수정
+    public Pet updatePetInfo(Long userId, Long petId, String features) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 반려견 정보를 찾을 수 없습니다."));
+
+        if (userId == null || !userId.equals(pet.getUserId())) {
+            throw new SecurityException("수정 권한이 없습니다.");
+        }
+
+        if (features != null && !features.isBlank()) {
+            pet.updatePetInfo(features);
+        }
+
+        return petRepository.save(pet);
     }
 
     private int calculateAge(String birthDt) {

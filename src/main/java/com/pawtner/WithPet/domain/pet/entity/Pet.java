@@ -49,4 +49,8 @@ public class Pet {
         this.nosePrint = nosePrint;
         this.dogImg = dogImg;
     }
+
+    public void updatePetInfo(String features) {
+        this.features = features;
+    }
 }
