@@ -8,6 +8,7 @@ import com.pawtner.WithPet.domain.pet.repository.PetRepository;
 import com.pawtner.WithPet.global.exception.PetInfoNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -87,5 +88,20 @@ public class PetDBService {
         } catch (Exception e) {
             return -1;
         }
+    }
+
+    public Pet getPetById(Long petId) {
+        return petRepository.findById(petId)
+                .orElseThrow(() -> new PetInfoNotFoundException("해당 반려견 정보를 찾을 수 없습니다."));
+    }
+
+    // 반려견 정보 갱신
+    @Transactional
+    public Pet renewalPetInfo(PetInfoResponse.Body.Item item, Long petId) {
+        Pet existingPet = petRepository.findById(petId)
+                .orElseThrow(() -> new PetInfoNotFoundException("해당 반려견 정보를 찾을 수 없습니다."));
+
+        existingPet.renewalFromAPI(item);
+        return existingPet;
     }
 }

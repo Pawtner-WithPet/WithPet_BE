@@ -1,69 +1,39 @@
-package com.pawtner.WithPet.domain.pet.entity;
+package com.pawtner.WithPet.domain.member.entity;
 
 import com.pawtner.WithPet.domain.pet.dto.PetInfoResponse;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Pet {
+public class Member {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String dogRegNo;
-    private String rfidCd;
-    private String dogNm;
-    private String birthDt;
-    private String sexNm;
-    private String kindNm;
-    private String neuterYn;
-    private String orgNm;
-    private String aprGbNm;
-    private String officeTel;
-    private String rfidGubun;
+    @Column(nullable = false, unique = true)
+    private String uid;  // 사용자 아이디 (로그인용)
 
-    private Long userId; // JWT 개발 전까지만 사용할 임시 userId 정보
+    @Column(nullable = false)
+    private String password;
 
-    private String features;
-    private String nosePrint;
-    private String dogImg;
+    private String nickname;
+    private String name;
+    private String birth;
+    private String image;   // 프로필 이미지 URL
 
     @Builder
-    public Pet(String dogRegNo, String rfidCd, String dogNm, String birthDt, String sexNm,
-               String kindNm, String neuterYn, String orgNm, String aprGbNm, String officeTel,
-               String rfidGubun, Long userId, String features, String nosePrint, String dogImg) {
-        this.dogRegNo = dogRegNo;
-        this.rfidCd = rfidCd;
-        this.dogNm = dogNm;
-        this.birthDt = birthDt;
-        this.sexNm = sexNm;
-        this.kindNm = kindNm;
-        this.neuterYn = neuterYn;
-        this.orgNm = orgNm;
-        this.aprGbNm = aprGbNm;
-        this.officeTel = officeTel;
-        this.rfidGubun = rfidGubun;
-        this.userId = userId;
-        this.features = features;
-        this.nosePrint = nosePrint;
-        this.dogImg = dogImg;
+    public Member(String uid, String password, String nickname, String name, String birth, String image) {
+        this.uid = uid;
+        this.password = password;
+        this.nickname = nickname;
+        this.name = name;
+        this.birth = birth;
+        this.image = image;
     }
-
-    // 반려견 정보 갱신용 메서드
-    public void updateFromAPI(PetInfoResponse.Body.Item item) {
-        this.rfidCd = item.getRfidCd();
-        this.dogNm = item.getDogNm();
-        this.birthDt = item.getBirthDt();
-        this.sexNm = item.getSexNm();
-        this.kindNm = item.getKindNm();
-        this.neuterYn = item.getNeuterYn();
-        this.orgNm = item.getOrgNm();
-        this.aprGbNm = item.getAprGbNm();
-        this.officeTel = item.getOfficeTel();
-        this.rfidGubun = item.getRfidGubun();
-        // features, nosePrint, dogImg는 그대로 유지
-    }
-
 }
