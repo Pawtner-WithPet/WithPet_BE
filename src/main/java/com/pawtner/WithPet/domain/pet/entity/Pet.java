@@ -69,4 +69,7 @@ public class Pet {
         // features, nosePrint, dogImg, status 는 그대로 유지
     }
 
+    public void updatePetInfo(String features) {
+        this.features = features;
+    }
 }

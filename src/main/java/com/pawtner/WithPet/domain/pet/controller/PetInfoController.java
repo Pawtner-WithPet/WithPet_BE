@@ -4,6 +4,7 @@ import com.pawtner.WithPet.domain.pet.dto.PetDetailResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetInfoResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetRegisterRequest;
+import com.pawtner.WithPet.domain.pet.dto.PetUpdateRequest;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.service.PetDBService;
 import com.pawtner.WithPet.domain.pet.service.PetService;
@@ -73,9 +74,9 @@ public class PetInfoController {
     }
 
     // 반려견 상세 정보 조회
-    @GetMapping
-    public ResponseEntity getPetDetailInfo(@RequestParam String dogRegNo){
-        PetDetailResponse petData = petDBService.getPetDetailInfo(dogRegNo);
+    @GetMapping("/{petId}")
+    public ResponseEntity<?> getPetDetailInfo(@PathVariable Long petId){
+        PetDetailResponse petData = petDBService.getPetDetailInfo(petId);;
 
         ApiResponse<PetDetailResponse> response = ApiResponse.success("SUCCESS_GET_DOG_DETAIL", "반려견 상세 정보를 조회했습니다.", petData);
 
@@ -91,5 +92,24 @@ public class PetInfoController {
         return ResponseEntity.ok(ApiResponse.success("SUCCESS_RENEWAL", "반려견 정보를 성공적으로 갱신했습니다.", response));
     }
 
+    
+    // 반려견 정보 수정
+    @PatchMapping("/{petId}")
+    public ResponseEntity<?> updatePetInfo(@PathVariable Long petId, @RequestBody PetUpdateRequest request) {
+        try {
+            Pet updatedPet = petDBService.updatePetInfo(request.getUserId(), petId, request.getFeatures());
+            PetDetailResponse petResponse = petDBService.getPetDetailInfo(petId);
 
+            return ResponseEntity.ok(ApiResponse.success("SUCCESS_UPDATE_DOG_DETAIL", "반려견 정보를 수정했습니다.", petResponse));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiErrorResponse.of(404, "/api/pet" + petId, "PET_NOT_FOUND", e.getMessage()));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiErrorResponse.of(403, "/api/pet/" + petId, "UNAUTHORIZED", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiErrorResponse.of(500, "/api/pet/" + petId, "UPDATE_FAILED", e.getMessage()));
+        }
+    }
 }
