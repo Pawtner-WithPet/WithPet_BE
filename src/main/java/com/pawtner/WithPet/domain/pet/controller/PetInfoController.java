@@ -82,6 +82,16 @@ public class PetInfoController {
 
         return ResponseEntity.ok(response);
     }
+
+    // 반려견 정보 갱신
+    @PutMapping("/renewal/{petId}")
+    public ResponseEntity<?> renewalPetInfo(@PathVariable Long petId) {
+        Pet renewalPet = petService.renewalPetInfo(petId);
+        PetDetailResponse response = petDBService.getPetDetailInfo(petId);
+
+        return ResponseEntity.ok(ApiResponse.success("SUCCESS_RENEWAL", "반려견 정보를 성공적으로 갱신했습니다.", response));
+    }
+
     
     // 반려견 정보 수정
     @PatchMapping("/{petId}")

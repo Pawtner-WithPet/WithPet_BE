@@ -35,4 +35,28 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+
+    // 회원 정보 조회 실패
+    @ExceptionHandler(MemberNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleMemberNotFound(MemberNotFoundException e, HttpServletRequest request) {
+        ApiErrorResponse response = ApiErrorResponse.of(
+                404,
+                request.getRequestURI(),
+                "USER_NOT_FOUND",
+                e.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    // 공공 API 호출 실패
+    @ExceptionHandler(PetApiException.class)
+    public ResponseEntity<ApiErrorResponse> handleExternalApi(PetApiException e, HttpServletRequest request) {
+        ApiErrorResponse response = ApiErrorResponse.of(
+                502,
+                request.getRequestURI(),
+                "API_CALL_FAILED",
+                e.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(response);
+    }
 }
