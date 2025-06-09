@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -111,5 +112,19 @@ public class PetInfoController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiErrorResponse.of(500, "/api/pet/" + petId, "UPDATE_FAILED", e.getMessage()));
         }
+    }
+
+
+    // 반려견 이미지 수정
+    @PatchMapping("/{petId}/image")
+    public ResponseEntity<?> updatePetImage(
+            @PathVariable Long petId,
+            @RequestParam Long userId,
+            @RequestParam MultipartFile dogImg
+    ) {
+        Pet updatedPet = petDBService.updatePetImage(userId, petId, dogImg);
+        PetDetailResponse petResponse = petDBService.getPetDetailInfo(petId);
+
+        return ResponseEntity.ok(ApiResponse.success("SUCCESS_UPDATE_DOG_IMAGE", "반려견 이미지를 수정했습니다.", petResponse));
     }
 }
