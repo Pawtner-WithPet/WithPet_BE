@@ -1,15 +1,20 @@
 package com.pawtner.WithPet.domain.pet.service;
 
+import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
+import com.pawtner.WithPet.domain.awsS3.service.S3Service;
 import com.pawtner.WithPet.domain.pet.dto.PetDetailResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetInfoResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
 import com.pawtner.WithPet.global.exception.PetInfoNotFoundException;
+import com.pawtner.WithPet.global.exception.PetNotFoundException;
+import com.pawtner.WithPet.global.exception.UnauthorizedPetAccessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -22,6 +27,7 @@ import java.util.stream.Collectors;
 public class PetDBService {
 
     private final PetRepository petRepository;
+    private final S3Service s3Service;
 
     public Pet savePetInfo(PetInfoResponse.Body.Item item, Long userId) {
         Pet pet = Pet.builder()
@@ -98,6 +104,48 @@ public class PetDBService {
 
         return petRepository.save(pet);
     }
+
+    // 반려견 이미지 수정
+    public Pet updatePetImage(Long userId, Long petId, MultipartFile dogImg) {
+
+        if (dogImg == null || dogImg.isEmpty()) {
+            throw new InvalidImageException("이미지 파일이 선택되지 않았습니다.");
+        }
+
+        // 유효성 검사
+        validateImageFile(dogImg);
+
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new PetNotFoundException("해당 반려견 정보를 찾을 수 없습니다."));
+
+        if (!userId.equals(pet.getUserId())) {
+            throw new UnauthorizedPetAccessException("수정 권한이 없습니다.");
+        }
+
+        // 기존 이미지가 있는 경우 → 삭제 (S3 불필요한 스토리지 비용 증가 방지를 위해 정리)
+        if (pet.getDogImg() != null) {
+            s3Service.deleteFileByUrl(pet.getDogImg());
+        }
+
+        // 새 이미지 업로드
+        String dogImgUrl = s3Service.uploadFile(dogImg, "dog-images");
+        pet.updateDogImg(dogImgUrl);
+
+        return petRepository.save(pet);
+    }
+    // 반려견 이미지 수정 - 유효성 검증
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidImageException("이미지 파일이 비어 있습니다.");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+            throw new InvalidImageException("지원하지 않는 이미지 형식입니다. (JPEG, PNG만 가능)");
+        }
+    }
+
 
     private int calculateAge(String birthDt) {
         try {

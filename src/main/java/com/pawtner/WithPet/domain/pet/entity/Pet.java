@@ -54,7 +54,7 @@ public class Pet {
         this.status = (status != null) ? status : true; // null일 경우 true로 설정
     }
 
-    // 반려견 정보 갱신용 메서드
+    // 반려견 정보 갱신 메서드
     public void renewalFromAPI(PetInfoResponse.Body.Item item) {
         this.rfidCd = item.getRfidCd();
         this.dogNm = item.getDogNm();
@@ -69,7 +69,13 @@ public class Pet {
         // features, nosePrint, dogImg, status 는 그대로 유지
     }
 
+    // 반려견 정보 수정
     public void updatePetInfo(String features) {
         this.features = features;
+    }
+
+    // 반려견 이미지 수정
+    public void updateDogImg(String dogImgUrl) {
+        this.dogImg = dogImgUrl;
     }
 }

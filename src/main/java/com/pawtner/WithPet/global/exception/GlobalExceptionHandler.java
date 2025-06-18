@@ -1,5 +1,7 @@
 package com.pawtner.WithPet.global.exception;
 
+import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
+import com.pawtner.WithPet.domain.awsS3.exception.S3OperationException;
 import com.pawtner.WithPet.global.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -58,5 +60,33 @@ public class GlobalExceptionHandler {
                 e.getMessage()
         );
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(response);
+    }
+
+    // 이미지 파일 유효성 검증 실패
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidImageException(InvalidImageException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiErrorResponse.of(400, request.getRequestURI(), "INVALID_IMAGE", e.getMessage()));
+    }
+
+    // 해당 Pet 없음
+    @ExceptionHandler(PetNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handlePetNotFound(PetNotFoundException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiErrorResponse.of(404, request.getRequestURI(), "PET_NOT_FOUND", e.getMessage()));
+    }
+
+    // 사용자 권한 없음
+    @ExceptionHandler(UnauthorizedPetAccessException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnauthorized(UnauthorizedPetAccessException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiErrorResponse.of(403, request.getRequestURI(), "UNAUTHORIZED", e.getMessage()));
+    }
+
+    // S3 업로드/삭제 실패
+    @ExceptionHandler(S3OperationException.class)
+    public ResponseEntity<ApiErrorResponse> handleS3Error(S3OperationException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiErrorResponse.of(500, request.getRequestURI(), "S3_ERROR", e.getMessage()));
     }
 }
