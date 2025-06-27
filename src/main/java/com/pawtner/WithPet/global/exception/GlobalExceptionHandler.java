@@ -2,6 +2,7 @@ package com.pawtner.WithPet.global.exception;
 
 import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
 import com.pawtner.WithPet.domain.awsS3.exception.S3OperationException;
+import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
 import com.pawtner.WithPet.global.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -89,4 +90,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiErrorResponse.of(500, request.getRequestURI(), "S3_ERROR", e.getMessage()));
     }
+
+    // 비문 중복 등록
+    @ExceptionHandler(DuplicateNosePrintException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicateNosePrint(DuplicateNosePrintException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiErrorResponse.of(409, request.getRequestURI(), "DUPLICATE_NOSEPRINT", e.getMessage()));
+    }
+
 }

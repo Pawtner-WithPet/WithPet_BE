@@ -1,0 +1,107 @@
+package com.pawtner.WithPet.domain.noseprint.service;
+
+import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
+import com.pawtner.WithPet.domain.awsS3.service.S3Service;
+import com.pawtner.WithPet.domain.noseprint.dto.NosePrintDetailResponse;
+import com.pawtner.WithPet.domain.member.entity.Member;
+import com.pawtner.WithPet.domain.member.repository.MemberRepository;
+import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
+import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
+import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
+import com.pawtner.WithPet.domain.pet.entity.Pet;
+import com.pawtner.WithPet.domain.pet.repository.PetRepository;
+import com.pawtner.WithPet.global.exception.MemberNotFoundException;
+import com.pawtner.WithPet.global.exception.PetNotFoundException;
+import com.pawtner.WithPet.global.exception.UnauthorizedPetAccessException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class NosePrintService {
+
+    private final NosePrintRepository nosePrintRepository;
+    private final PetRepository petRepository;
+    private final MemberRepository memberRepository;
+    private final S3Service s3Service;
+
+
+    // [ 비문 이미지 등록 ]
+    public NosePrint saveNosePrint(MultipartFile nosePrintImg, Long petId, Long ownerId) {
+
+        // 유효성 검사
+        validateImageFile(nosePrintImg);
+
+        // 연관 엔티티 조회 - Pet
+        Pet pet = null;
+        if (petId != null) {
+            pet = petRepository.findById(petId)
+                    .orElseThrow(() -> new PetNotFoundException("해당 반려견 정보를 찾을 수 없습니다. 반려견 ID: " + petId));
+        }
+
+        // 중복 확인 (1개체당 1비문)
+        if (pet != null && nosePrintRepository.existsByPetId(petId)) {
+            throw new DuplicateNosePrintException("이 반려견은 이미 비문이 등록돼 있습니다.");
+        }
+
+        // 연관 엔티티 조회 - Member
+        Member owner = null;
+        if (ownerId != null) {
+            owner = memberRepository.findById(ownerId)
+                    .orElseThrow(() -> new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다. 사용자 ID: " + ownerId));
+        }
+
+        // 권한 확인
+        if (pet != null && owner != null && !Objects.equals(ownerId, pet.getUserId())) {
+            throw new UnauthorizedPetAccessException("등록 권한이 없습니다");
+        }
+
+
+        // 비문 이미지 업로드 (aws s3)
+        String nosePrintUrl = s3Service.uploadFile(nosePrintImg, "nose-print-images");
+
+        // 엔티티 생성 & 저장
+        NosePrint nosePrint = nosePrintRepository.save(
+                NosePrint.builder()
+                        .nosePrintImg(nosePrintUrl)
+                        .pet(pet)
+                        .owner(owner)
+                        .build()
+        );
+
+        return nosePrint;
+    }
+
+    // 비문 이미지 등록 - 유효성 검증
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidImageException("이미지 파일이 비어 있습니다.");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+            throw new InvalidImageException("지원하지 않는 이미지 형식입니다. (JPEG, PNG만 가능)");
+        }
+    }
+
+
+    // [ 비문 상세 정보 조회 ]
+    public NosePrintDetailResponse getNosePrintDetailInfo(Long nosePrintId) {
+        NosePrint nosePrint = nosePrintRepository.findById(nosePrintId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 비문 정보를 찾을 수 없습니다. 비문 ID: " + nosePrintId));
+
+        return NosePrintDetailResponse.builder()
+                .nosePrintImg(nosePrint.getNosePrintImg())
+                .petId(nosePrint.getPet() != null ? nosePrint.getPet().getId() : null)
+                .ownerId(nosePrint.getOwner() != null ? nosePrint.getOwner().getId() : null)
+                .registerDatetime(nosePrint.getRegisterDatetime())
+                .build();
+    }
+
+}
