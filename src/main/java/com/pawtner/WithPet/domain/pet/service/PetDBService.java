@@ -107,11 +107,6 @@ public class PetDBService {
 
     // 반려견 이미지 수정
     public Pet updatePetImage(Long userId, Long petId, MultipartFile dogImg) {
-
-        if (dogImg == null || dogImg.isEmpty()) {
-            throw new InvalidImageException("이미지 파일이 선택되지 않았습니다.");
-        }
-
         // 유효성 검사
         validateImageFile(dogImg);
 
