@@ -56,6 +56,7 @@ public class PetDBService {
 
     public PetListResponse toPetListResponse(Pet pet) {
         return PetListResponse.builder()
+                .id(pet.getId())
                 .dogRegNo(pet.getDogRegNo())
                 .dogNm(pet.getDogNm())
                 .kindNm(pet.getKindNm())
