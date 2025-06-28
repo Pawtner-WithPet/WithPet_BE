@@ -6,6 +6,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class PetListResponse {
+    private Long id;
     private String dogRegNo;
     private String dogNm;
     private int dogAge;
