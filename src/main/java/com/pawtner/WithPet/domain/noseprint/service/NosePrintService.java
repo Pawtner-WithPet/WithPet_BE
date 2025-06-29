@@ -8,8 +8,10 @@ import com.pawtner.WithPet.domain.member.repository.MemberRepository;
 import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
 import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
+import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
+import com.pawtner.WithPet.global.dto.ApiResponse;
 import com.pawtner.WithPet.global.exception.MemberNotFoundException;
 import com.pawtner.WithPet.global.exception.PetNotFoundException;
 import com.pawtner.WithPet.global.exception.UnauthorizedPetAccessException;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -104,4 +107,19 @@ public class NosePrintService {
                 .build();
     }
 
+    // 비문 등록 반려견 조회
+    public ApiResponse<List<PetListResponse>> getPetsWithNosePrint(Long userId) {
+        if (!memberRepository.existsById(userId)) {
+            throw new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다. 사용자 ID: " + userId);
+        }
+
+        List<Long> PetIds = nosePrintRepository.findPetIdsWithNosePrintByOwnerId(userId);
+        List<Pet> pets = petRepository.findAllById(PetIds);
+
+        List<PetListResponse> result = pets.stream()
+                .map(PetListResponse::fromEntity)
+                .toList();
+
+        return ApiResponse.success("SUCCESS_GET_NOSEPRINT_DOGS", "비문 등록된 반려견 목록 조회 성공", result);
+    }
 }
