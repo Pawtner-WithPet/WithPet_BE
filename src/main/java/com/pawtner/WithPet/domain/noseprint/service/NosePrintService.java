@@ -5,8 +5,10 @@ import com.pawtner.WithPet.domain.awsS3.service.S3Service;
 import com.pawtner.WithPet.domain.noseprint.dto.NosePrintDetailResponse;
 import com.pawtner.WithPet.domain.member.entity.Member;
 import com.pawtner.WithPet.domain.member.repository.MemberRepository;
+import com.pawtner.WithPet.domain.noseprint.dto.NosePrintImageResponse;
 import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
+import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
 import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
@@ -107,7 +109,8 @@ public class NosePrintService {
                 .build();
     }
 
-    // 비문 등록 반려견 조회
+
+    // [ 비문 등록 반려견 조회 ]
     public ApiResponse<List<PetListResponse>> getPetsWithNosePrint(Long userId) {
         if (!memberRepository.existsById(userId)) {
             throw new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다. 사용자 ID: " + userId);
@@ -121,5 +124,36 @@ public class NosePrintService {
                 .toList();
 
         return ApiResponse.success("SUCCESS_GET_NOSEPRINT_DOGS", "비문 등록된 반려견 목록 조회 성공", result);
+    }
+
+
+    // [ 특정 반려견 비문 이미지 조회 ]
+    public ApiResponse<NosePrintImageResponse> getNosePrintByPetId(Long petId, Long userId) {
+        // 반려견 존재 확인
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new PetNotFoundException("해당 반려견 정보를 찾을 수 없습니다. 반려견 ID: " + petId));
+
+        // 사용자 존재 확인
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        // 권한 확인 (본인 반려견인지 체크)
+        if (!pet.getUserId().equals(member.getId())) {
+            throw new UnauthorizedPetAccessException("비문 조회 권한이 없습니다.");
+        }
+
+        // 비문 조회
+        NosePrint nosePrint = nosePrintRepository.findByPetId(petId)
+                .orElseThrow(() -> new NosePrintNotFoundException("해당 반려견의 비문이 등록되어 있지 않습니다."));
+
+        NosePrintImageResponse response = NosePrintImageResponse.builder()
+                .nosePrintId(nosePrint.getNose_print_id())
+                .nosePrintImg(nosePrint.getNosePrintImg())
+                .petId(petId)
+                .ownerId(member.getId())
+                .registerDatetime(nosePrint.getRegisterDatetime())
+                .build();
+
+        return ApiResponse.success("SUCCESS_GET_NOSEPRINT", "비문 이미지 조회 성공", response);
     }
 }
