@@ -3,6 +3,7 @@ package com.pawtner.WithPet.global.exception;
 import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
 import com.pawtner.WithPet.domain.awsS3.exception.S3OperationException;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
+import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
 import com.pawtner.WithPet.global.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -96,6 +97,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleDuplicateNosePrint(DuplicateNosePrintException e, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiErrorResponse.of(409, request.getRequestURI(), "DUPLICATE_NOSEPRINT", e.getMessage()));
+    }
+
+    // 비문 이미지 조회 실패
+    @ExceptionHandler(NosePrintNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNosePrintNotFound(NosePrintNotFoundException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiErrorResponse.of(404, request.getRequestURI(), "NOSEPRINT_NOT_FOUND", e.getMessage()));
     }
 
 }
