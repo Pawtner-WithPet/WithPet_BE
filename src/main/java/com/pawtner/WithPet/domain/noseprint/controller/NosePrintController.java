@@ -2,6 +2,8 @@ package com.pawtner.WithPet.domain.noseprint.controller;
 
 import com.pawtner.WithPet.domain.noseprint.dto.NosePrintDetailResponse;
 import com.pawtner.WithPet.domain.noseprint.dto.NosePrintImageResponse;
+import com.pawtner.WithPet.domain.noseprint.dto.NosePrintListDetailResponse;
+import com.pawtner.WithPet.domain.noseprint.dto.NosePrintListResponse;
 import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
 import com.pawtner.WithPet.domain.noseprint.service.NosePrintService;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
@@ -50,6 +52,26 @@ public class NosePrintController {
             @RequestParam Long userId // 로그인 기능 개발 전까지 임시로 전달받음
     ) {
         return ResponseEntity.ok(nosePrintService.getNosePrintByPetId(petId, userId));
+    }
+
+    // [비문 결과 목록 조회]
+    @GetMapping("/list")
+    public ResponseEntity<?> getNosePrintList(@RequestParam Long ownerId){
+        List<NosePrintListResponse> result = nosePrintService.getNosePrintList(ownerId);
+
+        ApiResponse<List<NosePrintListResponse>> response = ApiResponse.success("SUCCESS_GET_NOSEPRINT_LIST", "비문 탐색 결과 목록을 조회했습니다.", result);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // [비문 결과 상세 조회]
+    @GetMapping("/list/{searchId}")
+    public ResponseEntity<?> getNosePrintListDetail(@PathVariable Long searchId){
+        NosePrintListDetailResponse result = nosePrintService.getNosePrintListDetail(searchId);
+
+        ApiResponse<NosePrintListDetailResponse> response = ApiResponse.success("SUCCESS_GET_NOSEPRINT_LIST", "비문 탐색 결과 상세 정보를 조회했습니다.", result);
+
+        return ResponseEntity.ok(response);
     }
 
 }

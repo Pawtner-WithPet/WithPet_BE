@@ -1,5 +1,6 @@
 package com.pawtner.WithPet.domain.noseprint.entity;
 
+import com.pawtner.WithPet.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,14 +15,17 @@ public class NosePrintResult {
     @Column(name = "result_id")
     private Long resultId;
 
-    @Column(name = "search_id", nullable = false)
-    private Long searchId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "search_id", nullable = false)
+    private NosePrintSearch search;
 
-    @Column(name = "owner_id", nullable = false)
-    private Long ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private Member owner;
 
-    @Column(name = "nose_print_id", nullable = false)
-    private Long nosePrintId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "nose_print_id", nullable = false)
+    private NosePrint nosePrint;
 
     @Column(name = "match_rate", nullable = false)
     private Float matchRate;
@@ -30,11 +34,11 @@ public class NosePrintResult {
     private Boolean isMyMissingPet;
 
     @Builder
-    public NosePrintResult(Long searchId, Long ownerId, Long nosePrintId,
+    public NosePrintResult(NosePrintSearch search, Member owner, NosePrint nosePrint,
                            Float matchRate, Boolean isMyMissingPet) {
-        this.searchId = searchId;
-        this.ownerId = ownerId;
-        this.nosePrintId = nosePrintId;
+        this.search = search;
+        this.owner = owner;
+        this.nosePrint = nosePrint;
         this.matchRate = matchRate;
         this.isMyMissingPet = isMyMissingPet;
     }
