@@ -69,7 +69,7 @@ public class PetDBService {
     // 반려견 상세 정보 조회
     public PetDetailResponse getPetDetailInfo(Long petId) {
         Pet pet = petRepository.findById(petId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 반려견 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new PetInfoNotFoundException("해당 반려견 정보를 찾을 수 없습니다."));
 
         return PetDetailResponse.builder()
                 .dogRegNo(pet.getDogRegNo())

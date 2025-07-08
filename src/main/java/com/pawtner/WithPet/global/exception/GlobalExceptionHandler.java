@@ -4,6 +4,7 @@ import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
 import com.pawtner.WithPet.domain.awsS3.exception.S3OperationException;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
 import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
+import com.pawtner.WithPet.domain.noseprint.exception.SearchNotFoundException;
 import com.pawtner.WithPet.global.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -106,4 +107,15 @@ public class GlobalExceptionHandler {
                 .body(ApiErrorResponse.of(404, request.getRequestURI(), "NOSEPRINT_NOT_FOUND", e.getMessage()));
     }
 
+    // 탐색 결과 조회 실패
+    @ExceptionHandler(SearchNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleSearchNotFound(SearchNotFoundException e, HttpServletRequest request) {
+        ApiErrorResponse response = ApiErrorResponse.of(
+                404,
+                request.getRequestURI(),
+                "Search_NOT_FOUND",
+                e.getMessage()
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
 }

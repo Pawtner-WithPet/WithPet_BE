@@ -2,14 +2,18 @@ package com.pawtner.WithPet.domain.noseprint.service;
 
 import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
 import com.pawtner.WithPet.domain.awsS3.service.S3Service;
-import com.pawtner.WithPet.domain.noseprint.dto.NosePrintDetailResponse;
+import com.pawtner.WithPet.domain.noseprint.dto.*;
 import com.pawtner.WithPet.domain.member.entity.Member;
 import com.pawtner.WithPet.domain.member.repository.MemberRepository;
-import com.pawtner.WithPet.domain.noseprint.dto.NosePrintImageResponse;
 import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
+import com.pawtner.WithPet.domain.noseprint.entity.NosePrintResult;
+import com.pawtner.WithPet.domain.noseprint.entity.NosePrintSearch;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
 import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
+import com.pawtner.WithPet.domain.noseprint.exception.SearchNotFoundException;
 import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
+import com.pawtner.WithPet.domain.noseprint.repository.NosePrintResultRepository;
+import com.pawtner.WithPet.domain.noseprint.repository.NosePrintSearchRepository;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
@@ -24,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,6 +39,8 @@ public class NosePrintService {
     private final PetRepository petRepository;
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
+    private final NosePrintSearchRepository nosePrintSearchRepository;
+    private final NosePrintResultRepository nosePrintResultRepository;
 
 
     // [ 비문 이미지 등록 ]
@@ -155,5 +162,62 @@ public class NosePrintService {
                 .build();
 
         return ApiResponse.success("SUCCESS_GET_NOSEPRINT", "비문 이미지 조회 성공", response);
+    }
+
+    // [비문 결과 목록 조회]
+    public List<NosePrintListResponse> getNosePrintList(Long ownerId) {
+        if (!memberRepository.existsById(ownerId)) {
+            throw new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다.");
+        }
+
+        return nosePrintSearchRepository.findByOwnerIdOrderBySearchDatetimeDesc(ownerId).stream()
+                .map(this::toNosePrintListResponse)
+                .collect(Collectors.toList());
+    }
+
+    public NosePrintListResponse toNosePrintListResponse(NosePrintSearch nosePrint){
+        return NosePrintListResponse.builder()
+                .searchId(nosePrint.getSearchId())
+                .ownerId(nosePrint.getOwner().getId())
+                .nosePrintImg(nosePrint.getNosePrintImg())
+                .searchLocation(nosePrint.getSearchLocation())
+                .searchDatetime(nosePrint.getSearchDatetime())
+                .searchType(nosePrint.getSearchType())
+                .highestScore(nosePrint.getHighestScore())
+                .build();
+    }
+
+    // [비문 결과 상세 조회]
+    public NosePrintListDetailResponse getNosePrintListDetail(Long searchId){
+        NosePrintSearch search = nosePrintSearchRepository.findBySearchId(searchId)
+                .orElseThrow(() -> new SearchNotFoundException("해당 비문 탐색 결과를 찾을 수 없습니다."));
+
+        List<NosePrintResult> results = nosePrintResultRepository.findBySearch_SearchId(searchId);
+
+        List<NosePrintResultResponse> resultList = results.stream().map(result -> {
+
+            NosePrint nosePrint = result.getNosePrint();
+            Long petId = nosePrint != null && nosePrint.getPet() != null ? nosePrint.getPet().getId() : null;
+
+            return new NosePrintResultResponse(
+                    petId,
+                    result.getResultId(),
+                    result.getOwner().getId(),
+                    nosePrint != null ? nosePrint.getNose_print_id() : null,
+                    nosePrint != null ? nosePrint.getNosePrintImg() : null,
+                    result.getMatchRate(),
+                    result.getIsMyMissingPet()
+            );
+        }).collect(Collectors.toList());
+
+        return NosePrintListDetailResponse.builder()
+                .searchId(search.getSearchId())
+                .ownerId(search.getOwner().getId())
+                .nosePrintImg(search.getNosePrintImg())
+                .searchLocation(search.getSearchLocation())
+                .searchDatetime(search.getSearchDatetime())
+                .searchType(search.getSearchType())
+                .result(resultList)
+                .build();
     }
 }
