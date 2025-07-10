@@ -74,4 +74,18 @@ public class NosePrintController {
         return ResponseEntity.ok(response);
     }
 
+
+    // [ 특정 반려견 비문 이미지 수정 ]
+    @PutMapping("/image/{petId}")
+    public ResponseEntity<ApiResponse<NosePrintDetailResponse>> updateNosePrintImage(
+            @PathVariable Long petId,
+            @RequestParam MultipartFile nosePrintImg,
+            @RequestParam Long userId // 로그인 기능 도입 전까지 임시 전달
+    ) {
+        NosePrintDetailResponse result = nosePrintService.updateNosePrintImage(petId, userId, nosePrintImg);
+
+        return ResponseEntity.ok(ApiResponse.success("SUCCESS_UPDATE_NOSEPRINT", "비문 이미지를 성공적으로 수정했습니다.", result));
+    }
+
+
 }

@@ -47,5 +47,8 @@ public class NosePrint {
         this.owner = owner;
     }
 
-
+    // 비문 이미지 수정 메서드
+    public void updateImage(String newUrl) {
+        this.nosePrintImg = newUrl;
+    }
 }

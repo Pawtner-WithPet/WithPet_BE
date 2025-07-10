@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -87,19 +88,6 @@ public class NosePrintService {
         );
 
         return nosePrint;
-    }
-
-    // 비문 이미지 등록 - 유효성 검증
-    private void validateImageFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new InvalidImageException("이미지 파일이 비어 있습니다.");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null ||
-                (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
-            throw new InvalidImageException("지원하지 않는 이미지 형식입니다. (JPEG, PNG만 가능)");
-        }
     }
 
 
@@ -220,4 +208,66 @@ public class NosePrintService {
                 .result(resultList)
                 .build();
     }
+
+
+    // [ 비문 이미지 수정 ]
+    public NosePrintDetailResponse updateNosePrintImage(Long petId, Long userId, MultipartFile nosePrintImg) {
+
+        // 새 이미지 유효성 검사
+        validateImageFile(nosePrintImg);
+
+        // 반려견&사용자 확인
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new PetNotFoundException(
+                        "해당 반려견 정보를 찾을 수 없습니다. 반려견 ID: " + petId));
+
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new MemberNotFoundException(
+                        "해당 사용자 정보를 찾을 수 없습니다. 사용자 ID: " + userId));
+
+        if (!pet.getUserId().equals(member.getId())) {
+            throw new UnauthorizedPetAccessException("비문 수정 권한이 없습니다.");
+        }
+
+        // 기존 NosePrint 조회
+        NosePrint nosePrint = nosePrintRepository.findByPetId(petId)
+                .orElseThrow(() -> new NosePrintNotFoundException("해당 반려견의 비문이 등록되어 있지 않습니다."));
+
+        //  S3에 새 이미지 업로드
+        String newUrl = s3Service.uploadFile(nosePrintImg, "nose-print-images");
+
+        // 이전 이미지 삭제
+        try {
+            s3Service.deleteFileByUrl(nosePrint.getNosePrintImg());
+
+        } catch (Exception e) {
+            log.warn("기존 비문 이미지 삭제 실패: {}", e.getMessage());
+        }
+
+        // 엔티티 갱신
+        nosePrint.updateImage(newUrl);
+        nosePrintRepository.save(nosePrint);
+
+        // 수정 결과 반환
+        return NosePrintDetailResponse.builder()
+                .nosePrintImg(nosePrint.getNosePrintImg())
+                .petId(petId)
+                .ownerId(userId)
+                .registerDatetime(nosePrint.getRegisterDatetime())
+                .build();
+    }
+
+    // 비문 이미지 - 유효성 검증
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidImageException("이미지 파일이 비어 있습니다.");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+            throw new InvalidImageException("지원하지 않는 이미지 형식입니다. (JPEG, PNG만 가능)");
+        }
+    }
+
 }
