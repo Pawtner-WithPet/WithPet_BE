@@ -2,6 +2,8 @@ package com.pawtner.WithPet.domain.pet.service;
 
 import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
 import com.pawtner.WithPet.domain.awsS3.service.S3Service;
+import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
+import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
 import com.pawtner.WithPet.domain.pet.dto.PetDetailResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetInfoResponse;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class PetDBService {
 
     private final PetRepository petRepository;
+    private final NosePrintRepository nosePrintRepository;
     private final S3Service s3Service;
 
     public Pet savePetInfo(PetInfoResponse.Body.Item item, Long userId) {
@@ -55,6 +58,10 @@ public class PetDBService {
     }
 
     public PetListResponse toPetListResponse(Pet pet) {
+        String nosePrintImg = nosePrintRepository.findByPetId(pet.getId())
+                .map(NosePrint::getNosePrintImg)
+                .orElse(null);
+
         return PetListResponse.builder()
                 .id(pet.getId())
                 .dogRegNo(pet.getDogRegNo())
@@ -63,6 +70,7 @@ public class PetDBService {
                 .sexNm(pet.getSexNm())
                 .dogAge(calculateAge(pet.getBirthDt()))
                 .dogImg(pet.getDogImg())
+                .nosePrintImg(nosePrintImg)
                 .build();
     }
 

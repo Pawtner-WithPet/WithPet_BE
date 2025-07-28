@@ -115,7 +115,13 @@ public class NosePrintService {
         List<Pet> pets = petRepository.findAllById(PetIds);
 
         List<PetListResponse> result = pets.stream()
-                .map(PetListResponse::fromEntity)
+                .map(pet -> {
+                    String nosePrintImg = nosePrintRepository.findByPetId(pet.getId())
+                            .map(NosePrint::getNosePrintImg)
+                            .orElse(null);
+
+                    return PetListResponse.fromEntity(pet, nosePrintImg); // ✅ 새 팩토리 메서드 사용
+                })
                 .toList();
 
         return ApiResponse.success("SUCCESS_GET_NOSEPRINT_DOGS", "비문 등록된 반려견 목록 조회 성공", result);

@@ -14,8 +14,9 @@ public class PetListResponse {
     private String kindNm;
     private String sexNm;
     private String dogImg;
+    private String nosePrintImg;
 
-    public static PetListResponse fromEntity(Pet pet) {
+    public static PetListResponse fromEntity(Pet pet, String nosePrintImg) {
         return PetListResponse.builder()
                 .id(pet.getId())
                 .dogRegNo(pet.getDogRegNo())
@@ -23,6 +24,7 @@ public class PetListResponse {
                 .kindNm(pet.getKindNm())
                 .sexNm(pet.getSexNm())
                 .dogImg(pet.getDogImg())
+                .nosePrintImg(nosePrintImg)
                 .build();
     }
 }
