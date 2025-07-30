@@ -11,4 +11,5 @@ public class NosePrintResultSaveRequest {
     private Long nosePrintId;
     private Float matchRate;
     private Boolean isMyMissingPet;
+
 }
