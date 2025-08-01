@@ -80,7 +80,7 @@ public class FoundPetPost {
         this.kindNm         = kindNm;         // 견종(선택)
         this.nosePrintImg   = nosePrintImg;   // 비문 이미지 URL(선택)
         this.foundDate      = foundDate;      // 발견 일시 (필수)
-        this.foundLocation  = foundLocation;  // 발견 장소 (필수)
+        this.foundLocation  = foundLocation;  // 발견 장소 ()
         this.description    = description;    // 추가 설명(선택)
     }
 }
