@@ -5,8 +5,11 @@ import com.pawtner.WithPet.domain.awsS3.exception.S3OperationException;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
 import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
 import com.pawtner.WithPet.domain.noseprint.exception.SearchNotFoundException;
+import com.pawtner.WithPet.domain.search.exception.InvalidSearchKeywordException;
+import com.pawtner.WithPet.domain.search.exception.LostPetPostNotFoundException;
 import com.pawtner.WithPet.global.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -117,5 +121,19 @@ public class GlobalExceptionHandler {
                 e.getMessage()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    // 실종탐색: 키워드 누락 & 공백
+    @ExceptionHandler(InvalidSearchKeywordException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidSearchKeyword(InvalidSearchKeywordException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiErrorResponse.of(400, request.getRequestURI(), "INVALID_SEARCH_KEYWORD", e.getMessage()));
+    }
+
+    // 실종글 조회 실패
+    @ExceptionHandler(LostPetPostNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleLostPetPostNotFound(LostPetPostNotFoundException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiErrorResponse.of(404, request.getRequestURI(), "LostPetPost_NOT_FOUND", e.getMessage()));
     }
 }
