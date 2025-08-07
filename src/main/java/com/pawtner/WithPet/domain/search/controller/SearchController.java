@@ -1,6 +1,7 @@
 package com.pawtner.WithPet.domain.search.controller;
 
 import com.pawtner.WithPet.domain.search.dto.FoundPetPostResponse;
+import com.pawtner.WithPet.domain.search.dto.ShelterSearchResponse;
 import com.pawtner.WithPet.domain.search.service.SearchService;
 import com.pawtner.WithPet.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -38,4 +39,17 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
+    // 보호소 기반 탐색
+    @GetMapping("/withshelter")
+    public ResponseEntity<?> getShelterSearch(@RequestParam Long petId, @RequestParam(required = false) String keywords){
+        List<String> keywordList = Arrays.stream(keywords.split("[ ,]+"))
+                .filter(s -> !s.isBlank())
+                .toList();
+
+        List<ShelterSearchResponse> result = searchService.getShelterSearch(petId, keywordList);
+
+        ApiResponse<List<ShelterSearchResponse>> response = ApiResponse.success("SUCCESS_SEARCH_WITH_SHELTER", "보호소 기반 탐색 결과를 조회했습니다.", result);
+
+        return ResponseEntity.ok(response);
+    }
 }

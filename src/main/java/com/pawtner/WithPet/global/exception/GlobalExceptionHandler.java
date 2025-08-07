@@ -7,6 +7,7 @@ import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException
 import com.pawtner.WithPet.domain.noseprint.exception.SearchNotFoundException;
 import com.pawtner.WithPet.domain.search.exception.InvalidSearchKeywordException;
 import com.pawtner.WithPet.domain.search.exception.LostPetPostNotFoundException;
+import com.pawtner.WithPet.domain.search.exception.ShelterApiException;
 import com.pawtner.WithPet.global.dto.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -135,5 +136,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleLostPetPostNotFound(LostPetPostNotFoundException e, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiErrorResponse.of(404, request.getRequestURI(), "LostPetPost_NOT_FOUND", e.getMessage()));
+    }
+
+    // 보호소 api 조회 실패
+    @ExceptionHandler(ShelterApiException.class)
+    public ResponseEntity<ApiErrorResponse> handleLostPetPostNotFound(ShelterApiException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                .body(ApiErrorResponse.of(502, request.getRequestURI(), "SHELTER_API_ERROR", e.getMessage()));
     }
 }
