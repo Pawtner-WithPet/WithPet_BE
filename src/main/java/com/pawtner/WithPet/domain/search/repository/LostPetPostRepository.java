@@ -9,4 +9,6 @@ public interface LostPetPostRepository extends JpaRepository<LostPetPost, Long> 
 
     // 특정 반려견 ID로 실종 글 중 lostDate가 가장 최신인 글 한 건
     Optional<LostPetPost> findTopByPetIdOrderByLostDateDesc(Long petId);
+
+    Optional<LostPetPost> findBypetId(Long petId);
 }
