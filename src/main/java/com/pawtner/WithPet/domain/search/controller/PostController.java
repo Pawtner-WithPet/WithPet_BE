@@ -2,6 +2,7 @@ package com.pawtner.WithPet.domain.search.controller;
 
 import com.pawtner.WithPet.domain.search.dto.FoundPetPostResponse;
 import com.pawtner.WithPet.domain.search.dto.LostPetPostResponse;
+import com.pawtner.WithPet.domain.search.dto.PetPostSummaryResponse;
 import com.pawtner.WithPet.domain.search.service.PostService;
 import com.pawtner.WithPet.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,7 @@ public class PostController {
 
     private final PostService postService;
 
-    // [ 실종동물 목록 조회 ]
+    // [ 실종 동물 목록 조회 ]
     @GetMapping("/lost-list")
     public ResponseEntity<?> getLostPets(@RequestParam(required = false) String keyword) {
 
@@ -33,13 +34,24 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    // [ 발견동물 목록 조회 ]
+    // [ 발견 동물 목록 조회 ]
     @GetMapping("/found-list")
     public ResponseEntity<?> getFoundPets(@RequestParam(required = false) String keyword) {
 
         List<FoundPetPostResponse> result = postService.getFoundPets(keyword);
 
         ApiResponse<List<FoundPetPostResponse>> response = ApiResponse.success("SUCCESS_GET_FOUND_LIST", "발견 동물 목록을 성공적으로 조회했습니다.", result);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // [ 전체 등록 동물 목록 조회 ]
+    @GetMapping("/all-list")
+    public ResponseEntity<?> getAllPets(@RequestParam(required = false) String keyword) {
+
+        List<PetPostSummaryResponse> result = postService.getAllPets(keyword);
+
+        ApiResponse<List<PetPostSummaryResponse>> response = ApiResponse.success("SUCCESS_GET_ALL_LIST", "전체 등록 동물 목록을 성공적으로 조회했습니다.", result);
 
         return ResponseEntity.ok(response);
     }
