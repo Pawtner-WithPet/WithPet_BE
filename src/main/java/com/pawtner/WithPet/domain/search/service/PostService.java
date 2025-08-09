@@ -1,7 +1,11 @@
 package com.pawtner.WithPet.domain.search.service;
 
+import com.pawtner.WithPet.domain.search.dto.FoundPetPostResponse;
 import com.pawtner.WithPet.domain.search.dto.LostPetPostResponse;
+import com.pawtner.WithPet.domain.search.entity.FoundPetPost;
 import com.pawtner.WithPet.domain.search.entity.LostPetPost;
+import com.pawtner.WithPet.domain.search.repository.FoundPetPostRepository;
+import com.pawtner.WithPet.domain.search.repository.FoundPetPostSpecs;
 import com.pawtner.WithPet.domain.search.repository.LostPetPostRepository;
 import com.pawtner.WithPet.domain.search.repository.LostPetPostSpecs;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final LostPetPostRepository lostPetPostRepository;
+    private final FoundPetPostRepository foundPetPostRepository;
 
     // [ 실종 동물 목록 조회 ]
     @Transactional(readOnly = true)
@@ -36,4 +41,15 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
+    // [ 실종 동물 목록 조회 ]
+    public List<FoundPetPostResponse> getFoundPets(String keyword) {
+
+        Specification<FoundPetPost> spec = FoundPetPostSpecs.containsKeyword(keyword);
+
+        List<FoundPetPost> posts = foundPetPostRepository.findAll(spec);
+
+        return posts.stream()
+                .map(FoundPetPostResponse::from)
+                .collect(Collectors.toList());
+    }
 }

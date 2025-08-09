@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class LostPetPostSpecs {
 
-    // 키워드 검색 (대상 필드: lostLocation (실종 장소), pet.kindNm (견종))
+    // 키워드 1개 검색 (대상 필드: lostLocation (실종 장소), pet.kindNm (견종), pet.sexNm(성별))
     public static Specification<LostPetPost> containsKeyword(String keyword) {
 
         return (root, query, cb) -> {
