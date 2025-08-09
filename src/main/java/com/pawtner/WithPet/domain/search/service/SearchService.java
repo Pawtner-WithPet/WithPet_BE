@@ -94,7 +94,10 @@ public class SearchService {
                 || Optional.ofNullable(fp.getDescription()).map(String::toLowerCase).orElse("").contains(p);
     }
 
-    // 보호소 기반 탐색
+
+
+
+    // [ 보호소 기반 탐색 ]
     public List<ShelterSearchResponse> getShelterSearch(Long pet_id, List<String> keywordList){
         // 실종글 정보 가져오기
         LostPetPost post = lostPetPostRepository.findBypetId(pet_id)

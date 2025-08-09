@@ -23,12 +23,12 @@ public class LostPetPost {
     private Long lostPostId;
 
     // Member: 실종글 작성자
-    @ManyToOne(optional = false) //(fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
 
     // Pet: 실종 반려견
-    @ManyToOne //(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
 
