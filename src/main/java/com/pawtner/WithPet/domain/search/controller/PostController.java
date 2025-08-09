@@ -32,4 +32,15 @@ public class PostController {
 
         return ResponseEntity.ok(response);
     }
+
+    // [ 발견동물 목록 조회 ]
+    @GetMapping("/found-list")
+    public ResponseEntity<?> getFoundPets(@RequestParam(required = false) String keyword) {
+
+        List<FoundPetPostResponse> result = postService.getFoundPets(keyword);
+
+        ApiResponse<List<FoundPetPostResponse>> response = ApiResponse.success("SUCCESS_GET_FOUND_LIST", "발견 동물 목록을 성공적으로 조회했습니다.", result);
+
+        return ResponseEntity.ok(response);
+    }
 }

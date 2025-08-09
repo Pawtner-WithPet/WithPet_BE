@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class FoundPetPostResponse {
 
     private Long postId;
+    private String type;
     private LocalDateTime foundDate;
     private String foundLocation;
     private String kindNm;
@@ -26,6 +27,7 @@ public class FoundPetPostResponse {
     public static FoundPetPostResponse from(FoundPetPost p) {
         return FoundPetPostResponse.builder()
                 .postId(p.getFoundPostId())
+                .type("발견")
                 .foundDate(p.getFoundDate())
                 .foundLocation(p.getFoundLocation())
                 .kindNm(p.getKindNm())
