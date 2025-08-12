@@ -34,6 +34,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+
     // [ 발견 동물 목록 조회 ]
     @GetMapping("/found-list")
     public ResponseEntity<?> getFoundPets(@RequestParam(required = false) String keyword) {
@@ -45,6 +46,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+
     // [ 전체 등록 동물 목록 조회 ]
     @GetMapping("/all-list")
     public ResponseEntity<?> getAllPets(@RequestParam(required = false) String keyword) {
@@ -53,6 +55,16 @@ public class PostController {
 
         ApiResponse<List<PetPostSummaryResponse>> response = ApiResponse.success("SUCCESS_GET_ALL_LIST", "전체 등록 동물 목록을 성공적으로 조회했습니다.", result);
 
+        return ResponseEntity.ok(response);
+    }
+
+
+    // [ 게시물 상세 조회 ]
+    @GetMapping("/detail")
+    public ResponseEntity<?> getDetail(@RequestParam Long postId, @RequestParam String type) {
+        Object payload = postService.getDetail(postId, type);
+        ApiResponse<?> response = ApiResponse.success(
+                "SUCCESS_GET_DETAIL", "상세 정보를 성공적으로 조회했습니다.", payload);
         return ResponseEntity.ok(response);
     }
 }

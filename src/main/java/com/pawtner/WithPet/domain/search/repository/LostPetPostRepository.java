@@ -1,6 +1,7 @@
 package com.pawtner.WithPet.domain.search.repository;
 
 import com.pawtner.WithPet.domain.search.entity.LostPetPost;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,7 @@ public interface LostPetPostRepository extends JpaRepository<LostPetPost, Long>,
     Optional<LostPetPost> findTopByPetIdOrderByLostDateDesc(Long petId);
 
     Optional<LostPetPost> findBypetId(Long petId);
+
+    @EntityGraph(attributePaths = {"pet", "owner"})
+    java.util.Optional<LostPetPost> findWithAllByLostPostId(Long lostPostId);
 }
