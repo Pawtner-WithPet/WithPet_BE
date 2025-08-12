@@ -1,10 +1,11 @@
 package com.pawtner.WithPet.domain.search.service;
 
-import com.pawtner.WithPet.domain.search.dto.FoundPetPostResponse;
-import com.pawtner.WithPet.domain.search.dto.LostPetPostResponse;
-import com.pawtner.WithPet.domain.search.dto.PetPostSummaryResponse;
+import com.pawtner.WithPet.domain.search.dto.*;
 import com.pawtner.WithPet.domain.search.entity.FoundPetPost;
 import com.pawtner.WithPet.domain.search.entity.LostPetPost;
+import com.pawtner.WithPet.domain.search.exception.FoundPetPostNotFoundException;
+import com.pawtner.WithPet.domain.search.exception.InvalidPostTypeException;
+import com.pawtner.WithPet.domain.search.exception.LostPetPostNotFoundException;
 import com.pawtner.WithPet.domain.search.repository.FoundPetPostRepository;
 import com.pawtner.WithPet.domain.search.repository.FoundPetPostSpecs;
 import com.pawtner.WithPet.domain.search.repository.LostPetPostRepository;
@@ -73,4 +74,29 @@ public class PostService {
         list.sort(Comparator.comparing(PetPostSummaryResponse::getCreatedAt).reversed());
         return list;
     }
+
+    // [ 게시물 상세 조회 ]
+    public Object getDetail(Long postId, String type) {
+        if (postId == null || type == null || type.isBlank()) {
+            throw new IllegalArgumentException("postId와 type은 필수입니다.");
+        }
+
+        String t = type.trim().toUpperCase();
+
+        switch (t) {
+            case "LOST": {
+                LostPetPost l = lostPetPostRepository.findWithAllByLostPostId(postId)
+                        .orElseThrow(() -> new LostPetPostNotFoundException("해당 실종글을 찾을 수 없습니다. postId=" + postId));
+                return LostPetPostDetailResponse.from(l);
+            }
+            case "FOUND": {
+                FoundPetPost f = foundPetPostRepository.findWithAllByFoundPostId(postId)
+                        .orElseThrow(() -> new FoundPetPostNotFoundException("해당  발견글을 찾을 수 없습니다. postId=" + postId));
+                return FoundPetPostDetailResponse.from(f);
+            }
+            default:
+                throw new InvalidPostTypeException("유효하지 않은 type: " + type + " (LOST|FOUND 만 허용)");
+        }
+    }
+
 }
