@@ -99,4 +99,13 @@ public class PostService {
         }
     }
 
+
+    // [ 발견글 완료 - 삭제 ]
+    public void deleteFoundPost(Long postId) {
+        FoundPetPost post = foundPetPostRepository.findById(postId)
+                .orElseThrow(() -> new FoundPetPostNotFoundException("해당  발견글을 찾을 수 없습니다. postId=" + postId));
+
+        foundPetPostRepository.delete(post);
+    }
+
 }
