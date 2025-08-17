@@ -3,7 +3,12 @@ package com.pawtner.WithPet.domain.search.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pawtner.WithPet.domain.member.entity.Member;
+import com.pawtner.WithPet.domain.member.repository.MemberRepository;
+import com.pawtner.WithPet.domain.pet.entity.Pet;
+import com.pawtner.WithPet.domain.pet.repository.PetRepository;
 import com.pawtner.WithPet.domain.search.dto.FoundPetPostResponse;
+import com.pawtner.WithPet.domain.search.dto.LostStatusPetResponse;
 import com.pawtner.WithPet.domain.search.dto.ShelterApiResponse;
 import com.pawtner.WithPet.domain.search.dto.ShelterSearchResponse;
 import com.pawtner.WithPet.domain.search.entity.FoundPetPost;
@@ -13,6 +18,7 @@ import com.pawtner.WithPet.domain.search.exception.LostPetPostNotFoundException;
 import com.pawtner.WithPet.domain.search.exception.ShelterApiException;
 import com.pawtner.WithPet.domain.search.repository.FoundPetPostRepository;
 import com.pawtner.WithPet.domain.search.repository.LostPetPostRepository;
+import com.pawtner.WithPet.global.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +51,27 @@ public class SearchService {
 
     private final FoundPetPostRepository foundPetPostRepository;
     private final LostPetPostRepository lostPetPostRepository;
+    private final PetRepository petRepository;
+    private final MemberRepository memberRepository;
+
+    // [ 사용자별 실종 반려견 목록 조회]
+    public List<LostStatusPetResponse> getLostPetsByUser(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("userId는 필수입니다.");
+        }
+
+        if (!memberRepository.existsById(userId)) {
+            throw new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다. 사용자 ID: " + userId);
+        }
+
+        List<Pet> pets = petRepository.findByUserIdAndStatusFalse(userId);
+
+        return pets.stream()
+                .map(LostStatusPetResponse::from)
+                .toList();
+    }
+
+
 
     // [ 발견동물 기반 탐색 ]
     public List<FoundPetPostResponse> searchFoundPets(Long petId, List<String> keywords) {
@@ -93,7 +120,6 @@ public class SearchService {
                 || Optional.ofNullable(fp.getFoundLocation()).map(String::toLowerCase).orElse("").contains(p)
                 || Optional.ofNullable(fp.getDescription()).map(String::toLowerCase).orElse("").contains(p);
     }
-
 
 
 
