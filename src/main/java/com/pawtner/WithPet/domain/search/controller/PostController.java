@@ -8,10 +8,7 @@ import com.pawtner.WithPet.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -67,4 +64,23 @@ public class PostController {
                 "SUCCESS_GET_DETAIL", "상세 정보를 성공적으로 조회했습니다.", payload);
         return ResponseEntity.ok(response);
     }
+
+    // [ 발견글 완료 - 삭제 ]
+    @DeleteMapping("/done/found-post/{postId}")
+    public ResponseEntity<?>completeFoundPost(@PathVariable Long postId) {
+        postService.completeFoundPost(postId);
+
+        ApiResponse<?> response = ApiResponse.success("SUCCESS_COMPLETE_FOUND_POST", "발견글이 성공적으로 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // [ 실종글 완료 - 삭제, 미실종 처리 ]
+    @DeleteMapping("/done/lost-post/{postId}")
+    public ResponseEntity<?>completeLostPost(@PathVariable Long postId) {
+        postService.completeLostPost(postId);
+
+        ApiResponse<?> response = ApiResponse.success("SUCCESS_COMPLETE_LOST_POST", "실종글을 삭제하고 반려견 상태를 미실종으로 복구했습니다.");
+        return ResponseEntity.ok(response);
+    }
+
 }

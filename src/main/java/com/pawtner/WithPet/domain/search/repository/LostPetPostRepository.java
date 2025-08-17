@@ -19,4 +19,7 @@ public interface LostPetPostRepository extends JpaRepository<LostPetPost, Long>,
 
     @EntityGraph(attributePaths = {"pet", "owner"})
     java.util.Optional<LostPetPost> findWithAllByLostPostId(Long lostPostId);
+
+    @EntityGraph(attributePaths = {"pet"})
+    Optional<LostPetPost> findWithPetByLostPostId(Long lostPostId);
 }

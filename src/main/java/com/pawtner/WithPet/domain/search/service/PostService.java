@@ -1,5 +1,7 @@
 package com.pawtner.WithPet.domain.search.service;
 
+import com.pawtner.WithPet.domain.pet.entity.Pet;
+import com.pawtner.WithPet.domain.pet.repository.PetRepository;
 import com.pawtner.WithPet.domain.search.dto.*;
 import com.pawtner.WithPet.domain.search.entity.FoundPetPost;
 import com.pawtner.WithPet.domain.search.entity.LostPetPost;
@@ -29,6 +31,7 @@ public class PostService {
 
     private final LostPetPostRepository lostPetPostRepository;
     private final FoundPetPostRepository foundPetPostRepository;
+    private final PetRepository petRepository;
 
     // [ 실종 동물 목록 조회 ]
     @Transactional(readOnly = true)
@@ -99,4 +102,26 @@ public class PostService {
         }
     }
 
+
+    // [ 발견글 완료 - 삭제 ]
+    public void completeFoundPost(Long postId) {
+        FoundPetPost post = foundPetPostRepository.findById(postId)
+                .orElseThrow(() -> new FoundPetPostNotFoundException("해당  발견글을 찾을 수 없습니다. postId=" + postId));
+
+        foundPetPostRepository.delete(post);
+    }
+
+    // [ 실종글 완료 - 삭제, 미실종 처리 ]
+    @Transactional
+    public void completeLostPost(Long postId) {
+        LostPetPost post = lostPetPostRepository.findWithPetByLostPostId(postId)
+                .orElseThrow(() -> new LostPetPostNotFoundException("해당  실종글을 찾을 수 없습니다. postId=" + postId));
+
+        // PET-STATUS: 실종(t) -> 미실종(f)
+        Pet pet = post.getPet();
+        petRepository.updateStatusById(pet.getId(), true);
+
+        // 실종글 삭제
+        lostPetPostRepository.delete(post);
+    }
 }
