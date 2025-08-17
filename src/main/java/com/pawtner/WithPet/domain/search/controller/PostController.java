@@ -67,10 +67,19 @@ public class PostController {
 
     // [ 발견글 완료 - 삭제 ]
     @DeleteMapping("/done/found-post/{postId}")
-    public ResponseEntity<?>deleteFoundPost(@PathVariable Long postId) {
-        postService.deleteFoundPost(postId);
+    public ResponseEntity<?>completeFoundPost(@PathVariable Long postId) {
+        postService.completeFoundPost(postId);
 
-        ApiResponse<?> response = ApiResponse.success("SUCCESS_DELETE_FOUND_POST", "발견글이 성공적으로 삭제되었습니다.");
+        ApiResponse<?> response = ApiResponse.success("SUCCESS_COMPLETE_FOUND_POST", "발견글이 성공적으로 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // [ 실종글 완료 - 삭제, 미실종 처리 ]
+    @DeleteMapping("/done/lost-post/{postId}")
+    public ResponseEntity<?>completeLostPost(@PathVariable Long postId) {
+        postService.completeLostPost(postId);
+
+        ApiResponse<?> response = ApiResponse.success("SUCCESS_COMPLETE_LOST_POST", "실종글을 삭제하고 반려견 상태를 미실종으로 복구했습니다.");
         return ResponseEntity.ok(response);
     }
 
