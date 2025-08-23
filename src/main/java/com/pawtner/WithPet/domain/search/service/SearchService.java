@@ -3,7 +3,6 @@ package com.pawtner.WithPet.domain.search.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pawtner.WithPet.domain.member.entity.Member;
 import com.pawtner.WithPet.domain.member.repository.MemberRepository;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
@@ -126,7 +125,7 @@ public class SearchService {
     // [ 보호소 기반 탐색 ]
     public List<ShelterSearchResponse> getShelterSearch(Long pet_id, List<String> keywordList){
         // 실종글 정보 가져오기
-        LostPetPost post = lostPetPostRepository.findBypetId(pet_id)
+        LostPetPost post = lostPetPostRepository.findByPetId(pet_id)
                 .orElseThrow(() -> new LostPetPostNotFoundException("해당 실종 글이 존재하지 않습니다.")); // 예외 수정 필요
 
         // 실종 날짜 형식 변경

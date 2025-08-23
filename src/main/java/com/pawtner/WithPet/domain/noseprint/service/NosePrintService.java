@@ -6,14 +6,14 @@ import com.pawtner.WithPet.domain.noseprint.dto.*;
 import com.pawtner.WithPet.domain.member.entity.Member;
 import com.pawtner.WithPet.domain.member.repository.MemberRepository;
 import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
-import com.pawtner.WithPet.domain.noseprint.entity.NosePrintResult;
-import com.pawtner.WithPet.domain.noseprint.entity.NosePrintSearch;
+import com.pawtner.WithPet.domain.noseprint.entity.NoseMatchCandidate;
+import com.pawtner.WithPet.domain.noseprint.entity.NoseMatchResult;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
 import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
 import com.pawtner.WithPet.domain.noseprint.exception.SearchNotFoundException;
 import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
-import com.pawtner.WithPet.domain.noseprint.repository.NosePrintResultRepository;
-import com.pawtner.WithPet.domain.noseprint.repository.NosePrintSearchRepository;
+import com.pawtner.WithPet.domain.noseprint.repository.NoseMatchCandidateRepository;
+import com.pawtner.WithPet.domain.noseprint.repository.NoseMatchResultRepository;
 import com.pawtner.WithPet.domain.pet.dto.PetListResponse;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,8 +39,8 @@ public class NosePrintService {
     private final PetRepository petRepository;
     private final MemberRepository memberRepository;
     private final S3Service s3Service;
-    private final NosePrintSearchRepository nosePrintSearchRepository;
-    private final NosePrintResultRepository nosePrintResultRepository;
+    private final NoseMatchResultRepository noseMatchResultRepository;
+    private final NoseMatchCandidateRepository noseMatchCandidateRepository;
 
 
     // [ 비문 이미지 등록 ]
@@ -164,53 +163,54 @@ public class NosePrintService {
             throw new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다.");
         }
 
-        return nosePrintSearchRepository.findByOwnerIdOrderBySearchDatetimeDesc(ownerId).stream()
+        return noseMatchResultRepository.findByOwnerIdOrderBySearchDatetimeDesc(ownerId).stream()
                 .map(this::toNosePrintListResponse)
                 .collect(Collectors.toList());
     }
 
-    public NosePrintListResponse toNosePrintListResponse(NosePrintSearch nosePrint){
+    public NosePrintListResponse toNosePrintListResponse(NoseMatchResult nosePrint){
         return NosePrintListResponse.builder()
-                .searchId(nosePrint.getSearchId())
+                .resultId(nosePrint.getResultId())
                 .ownerId(nosePrint.getOwner().getId())
                 .nosePrintImg(nosePrint.getNosePrintImg())
                 .searchLocation(nosePrint.getSearchLocation())
                 .searchDatetime(nosePrint.getSearchDatetime())
                 .searchType(nosePrint.getSearchType())
                 .highestScore(nosePrint.getHighestScore())
+                .highestNosePrintImg(nosePrint.getHighestNosePrintImg())
+                .highestPostId(nosePrint.getHighestPostId())
                 .build();
     }
 
     // [비문 결과 상세 조회]
-    public NosePrintListDetailResponse getNosePrintListDetail(Long searchId){
-        NosePrintSearch search = nosePrintSearchRepository.findBySearchId(searchId)
+    public NosePrintListDetailResponse getNosePrintListDetail(Long resultId){
+        NoseMatchResult result = noseMatchResultRepository.findByResultId(resultId)
                 .orElseThrow(() -> new SearchNotFoundException("해당 비문 탐색 결과를 찾을 수 없습니다."));
 
-        List<NosePrintResult> results = nosePrintResultRepository.findBySearch_SearchId(searchId);
+        List<NoseMatchCandidate> results = noseMatchCandidateRepository.findByResult_ResultId(resultId);
 
-        List<NosePrintResultResponse> resultList = results.stream().map(result -> {
+        List<NoseMatchCandidResponse> resultList = results.stream().map(candidate -> {
 
-            NosePrint nosePrint = result.getNosePrint();
-            Long petId = nosePrint != null && nosePrint.getPet() != null ? nosePrint.getPet().getId() : null;
+            NosePrint nosePrint = candidate.getNosePrint();
 
-            return new NosePrintResultResponse(
-                    petId,
-                    result.getResultId(),
-                    result.getOwner().getId(),
+            return new NoseMatchCandidResponse(
+                    candidate.getCandidateId(),
+                    candidate.getResult() != null ? candidate.getResult().getResultId() : null,
+                    candidate.getOwner() != null ? candidate.getOwner().getId() : null,
                     nosePrint != null ? nosePrint.getNose_print_id() : null,
-                    nosePrint != null ? nosePrint.getNosePrintImg() : null,
-                    result.getMatchRate(),
-                    result.getIsMyMissingPet()
+                    candidate.getNosePrintImg(),
+                    candidate.getMatchRate(),
+                    candidate.getPostId()
             );
         }).collect(Collectors.toList());
 
         return NosePrintListDetailResponse.builder()
-                .searchId(search.getSearchId())
-                .ownerId(search.getOwner().getId())
-                .nosePrintImg(search.getNosePrintImg())
-                .searchLocation(search.getSearchLocation())
-                .searchDatetime(search.getSearchDatetime())
-                .searchType(search.getSearchType())
+                .searchId(result.getResultId())
+                .ownerId(result.getOwner().getId())
+                .nosePrintImg(result.getNosePrintImg())
+                .searchLocation(result.getSearchLocation())
+                .searchDatetime(result.getSearchDatetime())
+                .searchType(result.getSearchType())
                 .result(resultList)
                 .build();
     }

@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class NosePrintResultResponse {
-    private Long petId;
+public class NoseMatchCandidResponse {
+    private Long candidateId;
     private Long resultId;
     private Long ownerId;
     private Long nosePrintId;
     private String nosePrintImg;
     private Float matchRate;
-    private Boolean isMyMissingPet;
+    private Long postId;
 }

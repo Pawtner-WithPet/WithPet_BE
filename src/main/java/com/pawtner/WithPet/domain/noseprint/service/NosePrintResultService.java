@@ -4,27 +4,29 @@ import com.pawtner.WithPet.domain.member.entity.Member;
 import com.pawtner.WithPet.domain.member.repository.MemberRepository;
 import com.pawtner.WithPet.domain.noseprint.dto.NosePrintResultSaveRequest;
 import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
-import com.pawtner.WithPet.domain.noseprint.entity.NosePrintResult;
-import com.pawtner.WithPet.domain.noseprint.entity.NosePrintSearch;
+import com.pawtner.WithPet.domain.noseprint.entity.NoseMatchCandidate;
+import com.pawtner.WithPet.domain.noseprint.entity.NoseMatchResult;
 import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
-import com.pawtner.WithPet.domain.noseprint.repository.NosePrintResultRepository;
-import com.pawtner.WithPet.domain.noseprint.repository.NosePrintSearchRepository;
+import com.pawtner.WithPet.domain.noseprint.repository.NoseMatchCandidateRepository;
+import com.pawtner.WithPet.domain.noseprint.repository.NoseMatchResultRepository;
 import com.pawtner.WithPet.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NosePrintResultService {
 
-    private final NosePrintResultRepository repository;
-    private final NosePrintSearchRepository nosePrintSearchRepository;
+    private final NoseMatchCandidateRepository repository;
+    private final NoseMatchResultRepository noseMatchResultRepository;
     private final MemberRepository memberRepository;
     private final NosePrintRepository nosePrintRepository;
 
     public ApiResponse<String> saveResult(NosePrintResultSaveRequest request) {
-        NosePrintSearch search = nosePrintSearchRepository.findById(request.getSearchId())
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 search_id: " + request.getSearchId()));
+        NoseMatchResult resultId = noseMatchResultRepository.findById(request.getResultId())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 result_id: " + request.getResultId()));
 
         Member owner = memberRepository.findById(request.getOwnerId())
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 owner_id: " + request.getOwnerId()));
@@ -33,12 +35,11 @@ public class NosePrintResultService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 nose_print_id: " + request.getNosePrintId()));
 
         // 4. 결과 엔티티 생성
-        NosePrintResult result = NosePrintResult.builder()
-                .search(search)
+        NoseMatchCandidate result = NoseMatchCandidate.builder()
+                .result(resultId)
                 .owner(owner)
                 .nosePrint(nosePrint)
                 .matchRate(request.getMatchRate())
-                .isMyMissingPet(request.getIsMyMissingPet())
                 .build();
 
         // 5. 저장

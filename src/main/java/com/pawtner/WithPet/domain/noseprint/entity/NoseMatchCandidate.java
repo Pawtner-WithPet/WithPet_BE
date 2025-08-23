@@ -5,19 +5,19 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "noseprint_result")
+@Table(name = "nose_match_candidate")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NosePrintResult {
+public class NoseMatchCandidate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "result_id")
-    private Long resultId;
+    @Column(name = "candidate_id")
+    private Long candidateId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "search_id", nullable = false)
-    private NosePrintSearch search;
+    @JoinColumn(name = "result_id", nullable = false)
+    private NoseMatchResult result;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
@@ -30,16 +30,20 @@ public class NosePrintResult {
     @Column(name = "match_rate", nullable = false)
     private Float matchRate;
 
-    @Column(name = "is_my_missing_pet", nullable = false)
-    private Boolean isMyMissingPet;
+    @Column(name = "nose_print_img", nullable = false, length = 200)
+    private String nosePrintImg;
+
+    @Column(name = "post_id", nullable = false)
+    private Long postId;
 
     @Builder
-    public NosePrintResult(NosePrintSearch search, Member owner, NosePrint nosePrint,
-                           Float matchRate, Boolean isMyMissingPet) {
-        this.search = search;
+    public NoseMatchCandidate(NoseMatchResult result, Member owner, NosePrint nosePrint,
+                              String nosePrintImg, Float matchRate, Long postId) {
+        this.result = result;
         this.owner = owner;
         this.nosePrint = nosePrint;
         this.matchRate = matchRate;
-        this.isMyMissingPet = isMyMissingPet;
+        this.nosePrintImg = nosePrintImg;
+        this.postId = postId;
     }
 }

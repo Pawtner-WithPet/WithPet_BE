@@ -15,34 +15,42 @@ import java.util.List;
 
 @Entity
 @Data
+@Table(name = "nose_match_result")
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NosePrintSearch {
+public class NoseMatchResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long searchId;
+    @Column(name = "result_id")
+    private Long resultId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
 
-    @Column(nullable = false)
+    @Column(name = "nose_print_img", nullable = false, length = 200)
     private String nosePrintImg;
 
-    @Column(nullable = false)
+    @Column(name = "search_location", nullable = false, length = 100)
     private String searchLocation;
 
     @CreatedDate
-    @Column(nullable = false)
+    @Column(name = "search_datetime", nullable = false)
     private LocalDateTime searchDatetime;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "ENUM('LOST','FOUND')", nullable = false)
+    @Column(name = "search_type", columnDefinition = "ENUM('LOST','FOUND')", nullable = false)
     private SearchType searchType;
 
-    @Column(nullable = false)
+    @Column(name = "highest_score", nullable = false)
     private Float highestScore;
 
-    @OneToMany(mappedBy = "search", cascade = CascadeType.ALL)
-    private List<NosePrintResult> results = new ArrayList<>();
+    @Column(name = "highest_nose_print_img", nullable = false, length = 200)
+    private String highestNosePrintImg;
+
+    @Column(name = "highest_post_id", nullable = false)
+    private Long highestPostId;
+
+    @OneToMany(mappedBy = "result", cascade = CascadeType.ALL)
+    private List<NoseMatchCandidate> results = new ArrayList<>();
 }
