@@ -13,11 +13,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NosePrintListResponse {
-    private Long searchId;
+    private Long resultId;
     private Long ownerId;
     private String nosePrintImg;
     private String searchLocation;
     private LocalDateTime searchDatetime;
     private SearchType searchType;
     private Float highestScore;
+    private String highestNosePrintImg;
+    private Long highestPostId;
 }

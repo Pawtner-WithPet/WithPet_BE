@@ -20,5 +20,5 @@ public class NosePrintListDetailResponse {
     private String searchLocation;
     private LocalDateTime searchDatetime;
     private SearchType searchType;
-    private List<NosePrintResultResponse> result;
+    private List<NoseMatchCandidResponse> result;
 }
