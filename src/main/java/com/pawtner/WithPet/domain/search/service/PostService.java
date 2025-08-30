@@ -1,5 +1,12 @@
 package com.pawtner.WithPet.domain.search.service;
 
+import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
+import com.pawtner.WithPet.domain.awsS3.service.S3Service;
+import com.pawtner.WithPet.domain.member.entity.Member;
+import com.pawtner.WithPet.domain.member.repository.MemberRepository;
+import com.pawtner.WithPet.domain.noseprint.entity.NosePrint;
+import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
+import com.pawtner.WithPet.domain.noseprint.repository.NosePrintRepository;
 import com.pawtner.WithPet.domain.pet.entity.Pet;
 import com.pawtner.WithPet.domain.pet.repository.PetRepository;
 import com.pawtner.WithPet.domain.search.dto.*;
@@ -12,16 +19,22 @@ import com.pawtner.WithPet.domain.search.repository.FoundPetPostRepository;
 import com.pawtner.WithPet.domain.search.repository.FoundPetPostSpecs;
 import com.pawtner.WithPet.domain.search.repository.LostPetPostRepository;
 import com.pawtner.WithPet.domain.search.repository.LostPetPostSpecs;
+import com.pawtner.WithPet.global.dto.ApiResponse;
+import com.pawtner.WithPet.global.enums.Sex;
+import com.pawtner.WithPet.global.exception.MemberNotFoundException;
+import com.pawtner.WithPet.global.exception.PetNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +45,9 @@ public class PostService {
     private final LostPetPostRepository lostPetPostRepository;
     private final FoundPetPostRepository foundPetPostRepository;
     private final PetRepository petRepository;
+    private final MemberRepository memberRepository;
+    private final S3Service s3Service;
+    private final NosePrintRepository nosePrintRepository;
 
     // [ 실종 동물 목록 조회 ]
     @Transactional(readOnly = true)
@@ -123,5 +139,84 @@ public class PostService {
 
         // 실종글 삭제
         lostPetPostRepository.delete(post);
+    }
+
+    // 발견동물 등록
+    public ApiResponse<String> uploadFoundPost(FoundPostRequest request, MultipartFile image) {
+        // 작성자 확인
+        Member owner = memberRepository.findById(request.getOwner())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 ownerId: " + request.getOwner()));
+
+        // 유효성 검사
+        validateImageFile(image);
+
+        // 이미지 저장
+        String foundPetImg = s3Service.uploadFile(image, "found-pet-images");
+
+        FoundPetPost foundPost = FoundPetPost.builder()
+                .owner(owner)
+                .foundPetImg(foundPetImg)
+                .sex(request.getSex())
+                .kindNm(request.getKindNm())
+                .foundDate(request.getFoundDate())
+                .foundLocation(request.getFoundLocation())
+                .description(request.getDescription())
+                .build();
+
+        foundPetPostRepository.save(foundPost);
+
+        return ApiResponse.success("SUCCESS_POST_FOUNDPET", "발견동물이 성공적으로 등록되었습니다.", "postId: " + foundPost.getFoundPostId());
+    }
+
+    // 실종 동물 등록
+    public ApiResponse<String> uploadLostPost(LostPostRequest request, MultipartFile image) {
+        // 작성자 확인
+        Member owner = memberRepository.findById(request.getOwner())
+                .orElseThrow(() -> new MemberNotFoundException("해당 사용자 정보를 찾을 수 없습니다. 사용자 ID: " + request.getOwner()));
+        // 실종 동물 확인
+        Pet pet = petRepository.findById(request.getPet())
+                .orElseThrow(() -> new PetNotFoundException("반려견을 찾을 수 없습니다. 반려견 ID : " + request.getPet()));
+
+        if (lostPetPostRepository.findByPet(pet).isPresent()) {
+            return ApiResponse.error("DUPLICATE_POST", "이미 등록된 실종 게시글이 존재합니다.", 409);
+        }
+
+        // 유효성 검사
+        validateImageFile(image);
+
+        // 이미지 저장
+        String lostPetImg = s3Service.uploadFile(image, "lost-pet-images");
+
+        LostPetPost lostPost = LostPetPost.builder()
+                .owner(owner)
+                .pet(pet)
+                .lostPetImg(lostPetImg)
+                .lostDate(request.getLostDate())
+                .lostLocation(request.getLostLocation())
+                .favoritePlace(request.getFavoritePlace())
+                .description(request.getDescription())
+                .height(request.getHeight())
+                .weight(request.getWeight())
+                .build();
+
+        lostPetPostRepository.save(lostPost);
+
+        // 실종 상태로 변경
+        pet.setStatus(false);
+        petRepository.save(pet);
+
+        return ApiResponse.success("SUCCESS_POST_LOSTPET", "실종동물이 성공적으로 등록되었습니다.", "postId: " + lostPost.getLostPostId());
+    }
+
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new InvalidImageException("이미지 파일이 비어 있습니다.");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                (!contentType.equals("image/jpeg") && !contentType.equals("image/png"))) {
+            throw new InvalidImageException("지원하지 않는 이미지 형식입니다. (JPEG, PNG만 가능)");
+        }
     }
 }

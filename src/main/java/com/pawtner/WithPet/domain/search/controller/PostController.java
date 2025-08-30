@@ -1,14 +1,18 @@
 package com.pawtner.WithPet.domain.search.controller;
 
-import com.pawtner.WithPet.domain.search.dto.FoundPetPostResponse;
-import com.pawtner.WithPet.domain.search.dto.LostPetPostResponse;
-import com.pawtner.WithPet.domain.search.dto.PetPostSummaryResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.pawtner.WithPet.domain.search.dto.*;
 import com.pawtner.WithPet.domain.search.service.PostService;
 import com.pawtner.WithPet.global.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -81,6 +85,65 @@ public class PostController {
 
         ApiResponse<?> response = ApiResponse.success("SUCCESS_COMPLETE_LOST_POST", "실종글을 삭제하고 반려견 상태를 미실종으로 복구했습니다.");
         return ResponseEntity.ok(response);
+    }
+
+    // 발견동물 등록
+    @PostMapping("/foundPost")
+    public ResponseEntity<?> uploadFoundPost(
+            @RequestPart("request") String request,
+            @RequestPart(value = "image", required = false) MultipartFile image ) throws JsonProcessingException {
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            FoundPostRequest foundPostRequest = mapper.readValue(request, FoundPostRequest.class);
+
+            ApiResponse<String> result = postService.uploadFoundPost(foundPostRequest, image);
+            return ResponseEntity.ok(result);
+
+        } catch (JsonProcessingException e) {
+            ApiResponse<String> result = ApiResponse.error("INVALID_JSON_FORMAT", "잘못된 요청 형식입니다.", 400);
+            return ResponseEntity.badRequest().body(result);
+        } catch (Exception e) {
+            ApiResponse<String> result = ApiResponse.error("INTERNAL_SERVER_ERROR", "게시글 업로드 중 오류가 발생했습니다.", 500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
+
+    // 실종동물 등록
+    @PostMapping("/lostPost")
+    public ResponseEntity<?> uploadLostPost(
+            @RequestPart("request") String request,
+            @RequestPart(value = "image", required = false) MultipartFile image ) throws JsonProcessingException {
+
+        try {
+            // 요청 값 검증
+            if (request == null || request.isBlank()) {
+                return ResponseEntity.badRequest().body("요청 데이터가 비어 있습니다.");
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+            LostPostRequest lostPostRequest = mapper.readValue(request, LostPostRequest.class);
+
+            if (lostPostRequest == null) {
+                return ResponseEntity.badRequest().body("요청 데이터 매핑에 실패했습니다.");
+            }
+
+            ApiResponse<String> result = postService.uploadLostPost(lostPostRequest, image);
+            return ResponseEntity.ok(result);
+
+        } catch (JsonProcessingException e) {
+            ApiResponse<String> result = ApiResponse.error("INVALID_JSON_FORMAT", "잘못된 요청 형식입니다.", 400);
+            return ResponseEntity.badRequest().body(result);
+        } catch (Exception e) {
+            ApiResponse<String> result = ApiResponse.error("INTERNAL_SERVER_ERROR", "게시글 업로드 중 오류가 발생했습니다.", 500);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
     }
 
 }
