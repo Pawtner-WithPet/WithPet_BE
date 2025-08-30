@@ -32,6 +32,10 @@ public class LostPetPost {
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
 
+    // 실종견 이미지 URL
+    @Column(name = "lost_pet_img", length = 200, nullable = true)
+    private String lostPetImg;
+
     // 실종 일시
     @Column(name = "lost_date", nullable = false)
     private LocalDateTime lostDate;
@@ -65,6 +69,7 @@ public class LostPetPost {
     @Builder
     public LostPetPost(Member owner,
                        Pet pet,
+                       String lostPetImg,
                        LocalDateTime lostDate,
                        String lostLocation,
                        String favoritePlace,
@@ -74,6 +79,7 @@ public class LostPetPost {
 
         this.owner         = owner;
         this.pet           = pet;
+        this.lostPetImg    = lostPetImg;
         this.lostDate      = lostDate;
         this.lostLocation  = lostLocation;
         this.favoritePlace = favoritePlace;
@@ -81,5 +87,4 @@ public class LostPetPost {
         this.height        = height;
         this.weight        = weight;
     }
-
 }
