@@ -17,7 +17,8 @@ public class NosePrintResultController {
     @PostMapping("/result")
     public ResponseEntity<ApiResponse<String>> saveResult(
             @RequestBody NosePrintResultSaveRequest request) {
-        ApiResponse<String> response = service.saveResult(request);
+
+        ApiResponse<String> response = service.saveResultWithCandidates(request);
         return ResponseEntity.ok(response);
     }
 }
