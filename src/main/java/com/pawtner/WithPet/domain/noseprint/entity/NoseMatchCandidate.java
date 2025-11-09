@@ -36,6 +36,10 @@ public class NoseMatchCandidate {
     @Column(name = "post_id", nullable = false)
     private Long postId;
 
+
+    public void setResult(NoseMatchResult result) { this.result = result; }
+
+
     @Builder
     public NoseMatchCandidate(NoseMatchResult result, Member owner, NosePrint nosePrint,
                               String nosePrintImg, Float matchRate, Long postId) {
@@ -46,4 +50,5 @@ public class NoseMatchCandidate {
         this.nosePrintImg = nosePrintImg;
         this.postId = postId;
     }
+
 }
