@@ -26,7 +26,7 @@ public class ChatParticipant {
     private LocalDateTime joinedAt;
 
     // 마지막 읽은 시간
-    @Column(name = "last_read_at", nullable = false)
+    @Column(name = "last_read_at")
     private LocalDateTime lastReadAt;
 
     // 채팅방 아이디
@@ -45,6 +45,10 @@ public class ChatParticipant {
         this.chatRoom = chatRoom;
         this.owner = owner;
         this.lastReadAt = lastReadAt;
+    }
+
+    public void updateLastReadAt(LocalDateTime time) {
+        this.lastReadAt = time;
     }
 
 }
