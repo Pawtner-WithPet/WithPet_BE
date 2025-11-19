@@ -2,6 +2,7 @@ package com.pawtner.WithPet.domain.chat.controller;
 
 import com.pawtner.WithPet.domain.chat.dto.ChatRoomDetailResponse;
 import com.pawtner.WithPet.domain.chat.dto.ChatRoomListItemDto;
+import com.pawtner.WithPet.domain.chat.dto.ChatRoomOriginPostResponse;
 import com.pawtner.WithPet.domain.chat.dto.EnterChatFromPostRequest;
 import com.pawtner.WithPet.domain.chat.service.ChatQueryService;
 import com.pawtner.WithPet.global.dto.ApiResponse;
@@ -53,5 +54,12 @@ public class ChatRoomController {
     }
 
     // [ 채팅 상세글 이동 (채팅 시작한 게시글 id 반환) ]
-
+    @GetMapping("/origin-post")
+    public ResponseEntity<ApiResponse<ChatRoomOriginPostResponse>> getOriginPost(
+            @RequestParam("ownerId") Long ownerId,
+            @RequestParam("roomId") Long roomId
+    ) {
+        ChatRoomOriginPostResponse response = chatQueryService.getOriginPost(ownerId, roomId);
+        return ResponseEntity.ok(ApiResponse.success("SUCCESS_GET_CHATROOM_ORIGIN", "채팅방의 상세 게시글 정보를 성공적으로 조회했습니다.", response));
+    }
 }

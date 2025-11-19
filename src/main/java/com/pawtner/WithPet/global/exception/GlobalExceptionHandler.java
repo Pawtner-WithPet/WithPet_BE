@@ -4,6 +4,7 @@ import com.pawtner.WithPet.domain.awsS3.exception.InvalidImageException;
 import com.pawtner.WithPet.domain.awsS3.exception.S3OperationException;
 import com.pawtner.WithPet.domain.chat.exception.ChatRoomAccessDeniedException;
 import com.pawtner.WithPet.domain.chat.exception.ChatRoomNotFoundException;
+import com.pawtner.WithPet.domain.chat.exception.ChatRoomOriginNotFoundException;
 import com.pawtner.WithPet.domain.noseprint.exception.DuplicateNosePrintException;
 import com.pawtner.WithPet.domain.noseprint.exception.NosePrintNotFoundException;
 import com.pawtner.WithPet.domain.noseprint.exception.SearchNotFoundException;
@@ -160,7 +161,7 @@ public class GlobalExceptionHandler {
     // 유효하지 않은 채팅방 ID (존재하지 않는 채팅방)
     @ExceptionHandler(ChatRoomNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleChatRoomNotFound(ChatRoomNotFoundException e, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiErrorResponse.of(404, request.getRequestURI(), "ChatRoom_NOT_FOUND", e.getMessage()));
     }
 
@@ -169,5 +170,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleChatRoomAccessDenied(ChatRoomAccessDeniedException e, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(ApiErrorResponse.of(404, request.getRequestURI(), "CHAT_ROOM_ACCESS_DENIED", e.getMessage()));
+    }
+
+    // 채팅방의 origin 게시글을 찾을 수 없는 경우
+    @ExceptionHandler(ChatRoomOriginNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleChatRoomOriginNotFound(ChatRoomOriginNotFoundException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiErrorResponse.of(404, request.getRequestURI(), "CHAT_ROOM_ORIGIN_NOT_FOUND", e.getMessage()));
     }
 }

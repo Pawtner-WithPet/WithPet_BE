@@ -1,13 +1,11 @@
 package com.pawtner.WithPet.domain.chat.service;
 
-import com.pawtner.WithPet.domain.chat.dto.ChatMessageDto;
-import com.pawtner.WithPet.domain.chat.dto.ChatRoomDetailResponse;
-import com.pawtner.WithPet.domain.chat.dto.ChatRoomListItemDto;
-import com.pawtner.WithPet.domain.chat.dto.EnterChatFromPostRequest;
+import com.pawtner.WithPet.domain.chat.dto.*;
 import com.pawtner.WithPet.domain.chat.entity.ChatMessage;
 import com.pawtner.WithPet.domain.chat.entity.ChatParticipant;
 import com.pawtner.WithPet.domain.chat.entity.ChatRoom;
 import com.pawtner.WithPet.domain.chat.exception.ChatRoomAccessDeniedException;
+import com.pawtner.WithPet.domain.chat.exception.ChatRoomOriginNotFoundException;
 import com.pawtner.WithPet.domain.chat.repository.ChatMessageRepository;
 import com.pawtner.WithPet.domain.chat.repository.ChatParticipantRepository;
 import com.pawtner.WithPet.domain.chat.repository.ChatRoomRepository;
@@ -340,6 +338,40 @@ public class ChatQueryService {
     }
 
 
-    // [ 채팅 상세글 이동 (채팅 시작한 게시글 id 반환) ]
 
+    // [ 채팅 상세글 이동 (채팅 시작한 게시글 id 반환) ]
+    public ChatRoomOriginPostResponse getOriginPost(Long ownerId, Long roomId) {
+
+        Member me = memberRepository.findById(ownerId)
+                .orElseThrow(() -> new MemberNotFoundException("유효하지 않은 사용자 ID: " + ownerId));
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ChatRoomNotFoundException("유효하지 않은 채팅방 ID: " + roomId));
+
+        // 이 방의 참가자인지 확인 (권한 체크)
+        boolean isParticipant = participantRepo.existsByChatRoomAndOwner_Id(room, ownerId);
+        if (!isParticipant) {
+            throw new ChatRoomAccessDeniedException("해당 채팅방의 참가자가 아닙니다. roomId=" + roomId + ", ownerId=" + ownerId);
+        }
+
+        // origin post 정보 읽기
+        Long lostId = room.getOriginLostPostId();
+        Long foundId = room.getOriginFoundPostId();
+
+        if (lostId != null && lostId != 0L) {
+            return ChatRoomOriginPostResponse.builder()
+                    .postId(lostId)
+                    .postType("LOST")
+                    .build();
+        }
+
+        if (foundId != null && foundId != 0L) {
+            return ChatRoomOriginPostResponse.builder()
+                    .postId(foundId)
+                    .postType("FOUND")
+                    .build();
+        }
+
+        // 둘 다 없으면 예외
+        throw new ChatRoomOriginNotFoundException("해당 채팅방에 연결된 origin 게시글이 없습니다. roomId=" + roomId);
+    }
 }
