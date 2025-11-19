@@ -14,4 +14,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     long countByChatRoom_ChatRoomIdAndCreatedAtAfter(Long chatRoomId, LocalDateTime lastReadAt);
 
 
+    // 특정 채팅방 메시지 내역 조회
+    List<ChatMessage> findByChatRoom_ChatRoomIdOrderByCreatedAtAsc(Long chatRoomId);
 }

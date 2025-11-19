@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface ChatParticipantRepository extends JpaRepository<ChatParticipant, Long> {
 
-    // 참가자 기준으로 내가 참여한 방 목록을 방/마지막메시지까지 한 번에 로드
+    // [참가자 기준으로 내가 참여한 방 목록을 방/마지막메시지까지 한 번에 로드]
     @Query("""
        select cp
        from ChatParticipant cp
@@ -44,4 +44,14 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
        where cp.owner.id = :ownerId
     """)
     List<Long> findMyRoomIds(@Param("ownerId") Long ownerId);
+
+
+
+    //[방 + 유저 기준 참가자 찾기]
+    Optional<ChatParticipant> findByChatRoomAndOwner_Id(ChatRoom chatRoom, Long ownerId);
+
+    List<ChatParticipant> findByChatRoom(ChatRoom chatRoom);
+
+
+    boolean existsByChatRoomAndOwner_Id(ChatRoom chatRoom, Long ownerId);
 }
