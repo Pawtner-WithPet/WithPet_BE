@@ -57,4 +57,10 @@ public class ChatRoom {
         this.originLostPostId = originLostPostId;
         this.originFoundPostId = originFoundPostId;
     }
+
+    // 최근 메시지/시간 갱신 메서드
+    public void updateLastMessage(ChatMessage message) {
+        this.lastMessage = message;
+        this.lastMessageAt = message.getCreatedAt();
+    }
 }

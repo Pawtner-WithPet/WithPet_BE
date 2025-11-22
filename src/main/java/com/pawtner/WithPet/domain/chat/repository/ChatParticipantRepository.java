@@ -2,6 +2,7 @@ package com.pawtner.WithPet.domain.chat.repository;
 
 import com.pawtner.WithPet.domain.chat.entity.ChatParticipant;
 import com.pawtner.WithPet.domain.chat.entity.ChatRoom;
+import com.pawtner.WithPet.domain.member.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -54,4 +55,8 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
 
 
     boolean existsByChatRoomAndOwner_Id(ChatRoom chatRoom, Long ownerId);
+
+
+    // read event
+    Optional<ChatParticipant> findByChatRoomAndOwner(ChatRoom chatRoom, Member owner);
 }

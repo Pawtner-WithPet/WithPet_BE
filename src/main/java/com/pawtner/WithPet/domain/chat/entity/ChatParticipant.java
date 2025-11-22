@@ -47,6 +47,7 @@ public class ChatParticipant {
         this.lastReadAt = lastReadAt;
     }
 
+    // updateLastReadAt 메서드: read event & 방 진입 시점에서 사용
     public void updateLastReadAt(LocalDateTime time) {
         this.lastReadAt = time;
     }
