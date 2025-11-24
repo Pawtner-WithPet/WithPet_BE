@@ -179,7 +179,7 @@ public class ChatQueryService {
         List<ChatMessage> messages = messageRepo.findByChatRoom_ChatRoomIdOrderByCreatedAtAsc(roomId);
 
         List<ChatMessageDto> messageDtos = messages.stream()
-                .map(m -> toMessageDto(m, me, opponentParticipant))
+                .map(m -> toMessageDto(m, myParticipant, opponentParticipant))
                 .toList();
 
         // 시작 게시글 정보 세팅
@@ -206,8 +206,9 @@ public class ChatQueryService {
     }
 
         // > 채팅 메시지 DTO 함수
-    private ChatMessageDto toMessageDto(ChatMessage m, Member me, ChatParticipant opponentParticipant) {
-        boolean mine = m.getSender().getId().equals(me.getId());
+    private ChatMessageDto toMessageDto(ChatMessage m, ChatParticipant myParticipant, ChatParticipant opponentParticipant) {
+
+        boolean mine = m.getSender().getId().equals(myParticipant.getOwner().getId());
 
         String contentLabel;
         switch (m.getMsgType()) {
@@ -219,13 +220,28 @@ public class ChatQueryService {
         }
 
         boolean read;
+
         if (mine) {
             // 내가 보낸 메시지 → 상대가 읽었는지 (상대 lastReadAt 기준)
             LocalDateTime oppLastReadAt = opponentParticipant.getLastReadAt();
-            read = (oppLastReadAt != null && !m.getCreatedAt().isAfter(oppLastReadAt));
+
+            if (oppLastReadAt == null) {
+                // 상대가 아직 방에 안 들어왔거나, 한 번도 안 읽은 상태
+                read = false;
+            } else {
+                // createdAt <= opponentLastReadAt 이면 읽음
+                read = !m.getCreatedAt().isAfter(oppLastReadAt);
+            }
+
         } else {
-            // 상대가 보낸 메시지 ->  "읽음"
-            read = true;
+            // 상대가 보낸 메시지 → 내가 읽었는지
+            LocalDateTime myLastReadAt = myParticipant.getLastReadAt();
+
+            if (myLastReadAt == null) {
+                read = false;
+            } else {
+                read = !m.getCreatedAt().isAfter(myLastReadAt);
+            }
         }
 
         return ChatMessageDto.builder()
