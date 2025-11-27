@@ -21,7 +21,8 @@ public class LostPostRequest {
     private Integer weight;
 
     private LocalDateTime lostDate;
-    private String lostLocation;
+    private String lostLocation_latitude;
+    private String lostLocation_longitude;
     private String favoritePlace;
     private String description;
 

@@ -44,6 +44,14 @@ public class LostPetPost {
     @Column(name = "lost_location", length = 200, nullable = false)
     private String lostLocation;
 
+    // 실종 장소 - 위도
+    @Column(name = "lost_location_latitude", nullable = false)
+    private String lostLocation_latitude;
+
+    // 실종 장소 - 경도
+    @Column(name = "lost_location_longitude", nullable = false)
+    private String lostLocation_longitude;
+
     // 익숙한 장소
     @Column(name = "favorite_place", length = 200, nullable = true)
     private String favoritePlace;
@@ -72,6 +80,8 @@ public class LostPetPost {
                        String lostPetImg,
                        LocalDateTime lostDate,
                        String lostLocation,
+                       String lostLocation_latitude,
+                       String lostLocation_longitude,
                        String favoritePlace,
                        String description,
                        Integer height,
@@ -82,6 +92,8 @@ public class LostPetPost {
         this.lostPetImg    = lostPetImg;
         this.lostDate      = lostDate;
         this.lostLocation  = lostLocation;
+        this.lostLocation_latitude  = lostLocation_latitude;
+        this.lostLocation_longitude  = lostLocation_longitude;
         this.favoritePlace = favoritePlace;
         this.description   = description;
         this.height        = height;

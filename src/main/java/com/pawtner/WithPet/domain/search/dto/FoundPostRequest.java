@@ -19,7 +19,8 @@ public class FoundPostRequest {
     private String kindNm;
     private LocalDateTime foundDate;
 
-    private String foundLocation;
+    private String foundLocation_latitude;
+    private String foundLocation_longitude;
     private String description;
 
 }

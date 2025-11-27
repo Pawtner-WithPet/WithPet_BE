@@ -52,11 +52,17 @@ public class FoundPetPost {
     @Column(name = "found_location", length = 200, nullable = false)
     private String foundLocation;
 
+    // 발견 장소 - 위도
+    @Column(name = "found_location_latitude", nullable = false)
+    private String foundLocation_latitude;
+
+    // 발견 장소 - 경도
+    @Column(name = "found_location_longitude", nullable = false)
+    private String foundLocation_longitude;
 
     // 추가 설명
     @Column(name = "description", length = 200, nullable = true)
     private String description;
-
 
     // 글 생성일(자동 세팅)
     @CreationTimestamp
@@ -72,6 +78,8 @@ public class FoundPetPost {
                         String nosePrintImg,
                         LocalDateTime foundDate,
                         String foundLocation,
+                        String foundLocation_latitude,
+                        String foundLocation_longitude,
                         String description) {
 
         this.owner          = owner;          // 작성자 (필수)
@@ -81,6 +89,8 @@ public class FoundPetPost {
         this.nosePrintImg   = nosePrintImg;   // 비문 이미지 URL(선택)
         this.foundDate      = foundDate;      // 발견 일시 (필수)
         this.foundLocation  = foundLocation;  // 발견 장소 ()
+        this.foundLocation_latitude  = foundLocation_latitude;  // 발견 장소 위도 ()
+        this.foundLocation_longitude  = foundLocation_longitude;  // 발견 장소 경도 ()
         this.description    = description;    // 추가 설명(선택)
     }
 }
