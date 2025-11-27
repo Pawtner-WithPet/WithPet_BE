@@ -159,7 +159,8 @@ public class PostService {
                 .sex(request.getSex())
                 .kindNm(request.getKindNm())
                 .foundDate(request.getFoundDate())
-                .foundLocation(request.getFoundLocation())
+                .foundLocation_latitude(request.getFoundLocation_latitude())
+                .foundLocation_longitude(request.getFoundLocation_longitude())
                 .description(request.getDescription())
                 .build();
 
@@ -192,7 +193,8 @@ public class PostService {
                 .pet(pet)
                 .lostPetImg(lostPetImg)
                 .lostDate(request.getLostDate())
-                .lostLocation(request.getLostLocation())
+                .lostLocation_latitude(request.getLostLocation_latitude())
+                .lostLocation_longitude(request.getLostLocation_longitude())
                 .favoritePlace(request.getFavoritePlace())
                 .description(request.getDescription())
                 .height(request.getHeight())

@@ -15,7 +15,8 @@ public class FoundPetPostDetailResponse {
     private final String kindNm;                         // 견종
     private final String sex;                            // 성별 (ENUM → 문자열)
     private final java.time.LocalDateTime foundDate;     // 발견 일시
-    private final String foundLocation;                  // 발견 장소
+    private final String foundLocation_latitude;                  // 발견 장소
+    private final String foundLocation_longitude;                  // 발견 장소
     private final String description;                    // 추가 설명
     private final java.time.LocalDateTime createdAt;     // 작성일
 
@@ -28,7 +29,8 @@ public class FoundPetPostDetailResponse {
                 .kindNm(f.getKindNm())
                 .sex(enumToString(f.getSex()))
                 .foundDate(f.getFoundDate())
-                .foundLocation(f.getFoundLocation())
+                .foundLocation_latitude(f.getFoundLocation_latitude())
+                .foundLocation_longitude(f.getFoundLocation_longitude())
                 .description(f.getDescription())
                 .createdAt(f.getCreatedAt())
                 .build();

@@ -19,7 +19,8 @@ public class LostPetPostResponse {
     private Long postId;
     private String type;
     private LocalDateTime lostDate;
-    private String lostLocation;
+    private String lostLocation_latitude;
+    private String lostLocation_longitude;
     private String kindNm;
     private String sex;
     private String imgUrl;
@@ -30,7 +31,8 @@ public class LostPetPostResponse {
                 .postId(p.getLostPostId())
                 .type("실종")
                 .lostDate(p.getLostDate())
-                .lostLocation(p.getLostLocation())
+                .lostLocation_latitude(p.getLostLocation_latitude())
+                .lostLocation_longitude(p.getLostLocation_longitude())
                 .kindNm(p.getPet().getKindNm())
                 .sex(p.getPet().getSexNm())
                 .imgUrl(p.getPet().getDogImg())
